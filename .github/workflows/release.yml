@@ -32,7 +32,19 @@ jobs:
           # To ship signed/notarized, add CSC_LINK / CSC_KEY_PASSWORD / APPLE_ID
           # secrets and remove this line.
           CSC_IDENTITY_AUTO_DISCOVERY: false
-        run: npx electron-vite build && npx electron-builder --mac --publish never
+        run: |
+          set -euo pipefail
+          npx electron-vite build
+          # On a tag, drive the artifact version from the tag (v0.1.1 -> 0.1.1) so the
+          # filenames match the release. extraMetadata overrides package.json at build
+          # time without committing a version bump. Off a tag, use package.json as-is.
+          if [[ "${GITHUB_REF:-}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            echo "Building version $VERSION from tag $GITHUB_REF_NAME"
+            npx electron-builder --mac --publish never -c.extraMetadata.version="$VERSION"
+          else
+            npx electron-builder --mac --publish never
+          fi
 
       # Use the pre-installed gh CLI (a native binary — no Node action runtime, so no
       # Node-20 deprecation) to create the Release for the pushed tag and upload the

@@ -5,3 +5,4 @@
 * [Conformance](conformance.md) - The rules a bundle must satisfy, and the permissive consumer contract.
 * [Data model](data-model.md) - okfview's internal Bundle / Concept / Link types.
 * [MCP tools](mcp-tools.md) - The tools okfview exposes to coding agents.
+* [Release process](release-process.md) - How macOS installers are versioned, signed, and published.
