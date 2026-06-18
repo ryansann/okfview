@@ -1,9 +1,27 @@
 {
   "name": "okfview",
   "version": "0.1.0",
-  "description": "An open-source desktop viewer for OKF (Open Knowledge Format) bundles — local & remote, with live sync.",
+  "description": "An open-source desktop viewer for OKF (Open Knowledge Format) bundles: local and remote, with live sync.",
   "author": "ryansann",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/ryansann/okfview#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryansann/okfview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ryansann/okfview/issues"
+  },
+  "keywords": [
+    "okf",
+    "open-knowledge-format",
+    "knowledge-graph",
+    "markdown",
+    "electron",
+    "mcp",
+    "model-context-protocol",
+    "developer-tools"
+  ],
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -56,6 +74,7 @@
       "out/**/*",
       "resources/**/*"
     ],
+    "afterPack": "./scripts/after-pack-adhoc.cjs",
     "mac": {
       "category": "public.app-category.developer-tools",
       "target": [

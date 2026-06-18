@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a reproducible problem in okfview.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: okfview version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS arm64
+        - macOS x64
+        - Linux
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Bundle source type
+      options:
+        - Local folder
+        - Git repository
+        - HTTP tar.gz
+        - Not bundle-related
+        - Other
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or diagnostics
+      description: Include console output, screenshots, or `npm run inspect <bundle>` output if relevant.
+      render: text
+
