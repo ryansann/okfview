@@ -1,0 +1,88 @@
+{
+  "name": "okfview",
+  "version": "0.1.0",
+  "description": "An open-source desktop viewer for OKF (Open Knowledge Format) bundles — local & remote, with live sync.",
+  "author": "ryansann",
+  "license": "Apache-2.0",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck:node": "tsc -p tsconfig.node.json --noEmit",
+    "typecheck:web": "tsc -p tsconfig.web.json --noEmit",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "test": "vitest run",
+    "inspect": "node scripts/inspect.mjs",
+    "dist": "electron-vite build && electron-builder"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "chokidar": "^3.6.0",
+    "gray-matter": "^4.0.3",
+    "simple-git": "^3.25.0",
+    "tar": "^7.4.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.21.0",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "cytoscape": "^3.30.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "highlight.js": "^11.10.0",
+    "minisearch": "^7.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "rehype-highlight": "^7.0.0",
+    "remark-gfm": "^4.0.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.3.0",
+    "vitest": "^2.0.0",
+    "zustand": "^4.5.4"
+  },
+  "build": {
+    "appId": "com.ryansann.okfview",
+    "productName": "okfview",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "writeUpdateInfo": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ryansann",
+      "repo": "okfview"
+    }
+  }
+}

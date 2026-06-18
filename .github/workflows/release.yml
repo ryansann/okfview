@@ -1,0 +1,46 @@
+name: Release (macOS)
+
+# Tag a release to build and publish a macOS .dmg + .zip:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: write # needed to create the GitHub Release & upload assets
+
+jobs:
+  release:
+    runs-on: macos-14 # Apple silicon runner; builds arm64 + x64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Typecheck & test
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Build & package (dmg + zip, arm64 + x64)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Unsigned build: skip auto-discovery of signing identity.
+          # To ship signed/notarized, add CSC_LINK / CSC_KEY_PASSWORD / APPLE_ID
+          # secrets and remove this line.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npm run dist -- --publish always
+
+      - name: Upload artifacts (fallback if publish is skipped)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: okfview-macos
+          path: |
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: ignore
