@@ -93,6 +93,18 @@ okfview implements the OKF v0.1 consumer contract faithfully:
 - `index.md` (TOC) and `log.md` (history) are reserved; `okf_version` is read only from the bundle-root `index.md`.
 - A bundle is **never rejected** for missing optional fields, unknown types/keys, broken links, or missing index files (spec §9).
 
+## Documentation (a self-hosting OKF bundle 🐶)
+
+okfview's own docs live in [`docs/`](docs/README.md) as a **native, conformant OKF v0.1
+bundle** under [`docs/okf/`](docs/okf/index.md) — 22 cross-linked concepts covering the
+architecture, features, reference, and design decisions. okfview documents itself in the
+format it views: open `docs/okf/` in the app (**Open folder…**), or point an agent at it
+over MCP. Validate it yourself:
+
+```bash
+npm run inspect docs/okf      # → 22 concepts, 0 diagnostics, fully conformant
+```
+
 ## Develop
 
 ```bash
