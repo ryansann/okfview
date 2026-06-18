@@ -1,23 +1,23 @@
 name: Release (macOS)
 
-# Tag a release to build and publish a macOS .dmg + .zip:
+# Tag a release to build and attach a macOS .dmg + .zip to that tag's GitHub Release:
 #   git tag v0.1.0 && git push origin v0.1.0
 on:
   push:
     tags: ['v*']
-  workflow_dispatch: # allow manual runs from the Actions tab
+  workflow_dispatch: # manual build from the Actions tab (no release upload unless run on a tag)
 
 permissions:
-  contents: write # needed to create the GitHub Release & upload assets
+  contents: write # needed to create the Release & upload assets
 
 jobs:
   release:
     runs-on: macos-14 # Apple silicon runner; builds arm64 + x64
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
 
@@ -28,19 +28,25 @@ jobs:
 
       - name: Build & package (dmg + zip, arm64 + x64)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Unsigned build: skip auto-discovery of signing identity.
+          # Unsigned build: skip auto-discovery of a signing identity.
           # To ship signed/notarized, add CSC_LINK / CSC_KEY_PASSWORD / APPLE_ID
           # secrets and remove this line.
           CSC_IDENTITY_AUTO_DISCOVERY: false
-        run: npm run dist -- --publish always
+        run: npx electron-vite build && npx electron-builder --mac --publish never
 
-      - name: Upload artifacts (fallback if publish is skipped)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: okfview-macos
-          path: |
-            release/*.dmg
-            release/*.zip
-          if-no-files-found: ignore
+      # Use the pre-installed gh CLI (a native binary — no Node action runtime, so no
+      # Node-20 deprecation) to create the Release for the pushed tag and upload the
+      # artifacts to it. Idempotent: if the release already exists (re-run), it just
+      # (re)uploads the assets.
+      - name: Publish artifacts to the tagged GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ls -la release
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            release/*.dmg release/*.zip \
+          || gh release upload "$GITHUB_REF_NAME" --clobber release/*.dmg release/*.zip

@@ -5,8 +5,9 @@ import type { Bundle, BundleHandle, SourceKind } from './okf/types'
 export interface KnownBundle {
   kind: SourceKind
   origin: string
-  label: string
+  label: string // display name (alias if set, else derived)
   lastOpened: number // epoch ms
+  alias?: string // user-chosen name, re-applied on reopen
 }
 
 export const IPC = {
@@ -19,6 +20,7 @@ export const IPC = {
   refreshBundle: 'bundle:refresh',
   closeBundle: 'bundle:close',
   setShared: 'bundle:set-shared',
+  setAlias: 'bundle:set-alias',
   listRecents: 'bundle:list-recents',
   openRecent: 'bundle:open-recent',
   forgetRecent: 'bundle:forget-recent',
@@ -87,6 +89,7 @@ export interface OkfApi {
   refreshBundle(id: string): Promise<Bundle | null>
   closeBundle(id: string): Promise<void>
   setShared(id: string, shared: boolean): Promise<Bundle | null>
+  setAlias(id: string, alias: string): Promise<Bundle | null>
   listRecents(): Promise<KnownBundle[]>
   openRecent(kind: SourceKind, origin: string): Promise<Bundle | null>
   forgetRecent(kind: SourceKind, origin: string): Promise<KnownBundle[]>

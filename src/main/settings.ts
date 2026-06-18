@@ -8,6 +8,7 @@ export interface PersistedBundle {
   kind: SourceKind
   origin: string // path (local) or URL (git/http), incl. any #subpath
   shared: boolean // exposed to MCP agents
+  alias?: string // user-chosen display name, overrides the derived label
 }
 
 export interface Settings {

@@ -111,9 +111,26 @@ function BundleItem({ bundle, active }: { bundle: Bundle; active: boolean }): JS
   const pushToast = useStore((s) => s.pushToast)
   const applyChange = useStore((s) => s.applyChange)
   const mcpEnabled = useStore((s) => s.mcp?.enabled ?? false)
+  const refreshRecents = useStore((s) => s.refreshRecents)
   const [open, setOpen] = useState(true)
+  const [renaming, setRenaming] = useState(false)
+  const [draft, setDraft] = useState('')
 
   const tree = useMemo(() => buildTree(bundle), [bundle])
+
+  const startRename = (e: React.MouseEvent): void => {
+    e.stopPropagation()
+    setDraft(bundle.label)
+    setRenaming(true)
+  }
+  const commitRename = async (): Promise<void> => {
+    setRenaming(false)
+    const updated = await window.okf.setAlias(bundle.id, draft)
+    if (updated) {
+      applyChange(updated)
+      await refreshRecents()
+    }
+  }
   const close = async (e: React.MouseEvent): Promise<void> => {
     e.stopPropagation()
     await window.okf.closeBundle(bundle.id)
@@ -152,9 +169,28 @@ function BundleItem({ bundle, active }: { bundle: Bundle; active: boolean }): JS
           {open ? '▾' : '▸'}
         </button>
         <span className={`source-badge ${bundle.source.kind}`}>{bundle.source.kind}</span>
-        <span className="bundle-name" title={bundle.source.origin}>
-          {bundle.label}
-        </span>
+        {renaming ? (
+          <input
+            className="bundle-rename"
+            value={draft}
+            autoFocus
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void commitRename()
+              else if (e.key === 'Escape') setRenaming(false)
+            }}
+          />
+        ) : (
+          <span
+            className="bundle-name"
+            title={`${bundle.source.origin}\n(double-click to rename)`}
+            onDoubleClick={startRename}
+          >
+            {bundle.label}
+          </span>
+        )}
         {mcpEnabled && (
           <button
             className={`icon-btn share ${bundle.shared ? 'on' : ''}`}
@@ -165,6 +201,9 @@ function BundleItem({ bundle, active }: { bundle: Bundle; active: boolean }): JS
           </button>
         )}
         <span className="bundle-actions">
+          <button className="icon-btn" title="Rename bundle" onClick={startRename}>
+            ✎
+          </button>
           {bundle.source.kind !== 'local' && (
             <button className="icon-btn" title="Sync now" onClick={refresh}>
               ⟳

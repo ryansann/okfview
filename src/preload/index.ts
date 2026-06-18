@@ -12,6 +12,7 @@ const api: OkfApi = {
   refreshBundle: (id) => ipcRenderer.invoke(IPC.refreshBundle, id),
   closeBundle: (id) => ipcRenderer.invoke(IPC.closeBundle, id),
   setShared: (id, shared) => ipcRenderer.invoke(IPC.setShared, id, shared),
+  setAlias: (id, alias) => ipcRenderer.invoke(IPC.setAlias, id, alias),
   listRecents: () => ipcRenderer.invoke(IPC.listRecents),
   openRecent: (kind, origin) => ipcRenderer.invoke(IPC.openRecent, kind, origin),
   forgetRecent: (kind, origin) => ipcRenderer.invoke(IPC.forgetRecent, kind, origin),
