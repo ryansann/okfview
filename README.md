@@ -63,6 +63,10 @@ okfview keeps a small JSON store in your OS app-data dir (`okfview-settings.json
 
 - **Open bundles auto-restore** on the next launch — local folders re-read instantly,
   git/http sources re-sync in the background. No re-importing.
+- **Smart names + aliases** — if a bundle's folder is generic (e.g. you keep every
+  project's bundle in `docs/okf/`), okfview names it after the **project dir** instead of
+  "okf". Double-click a bundle (or the ✎) to set a custom **alias** — it's used everywhere,
+  including over MCP, and persists.
 - **Recent bundles** — every bundle you've imported is remembered, so even after you
   *close* one it's one click to reopen from the **Recent** list (welcome screen, or the
   **Recent ▾** button in the sidebar). Forget any with the ✕.
@@ -78,10 +82,22 @@ to Applications. Builds are currently **unsigned**, so on first launch macOS
 Gatekeeper will warn — right-click the app → **Open**, or run
 `xattr -dr com.apple.quarantine /Applications/okfview.app`.
 
-Releases are produced by `.github/workflows/release.yml` on a `v*` tag
-(`git tag v0.1.0 && git push origin v0.1.0`) via electron-builder. To ship signed
-& notarized builds, add `CSC_LINK` / `CSC_KEY_PASSWORD` / Apple ID secrets and drop
-the `CSC_IDENTITY_AUTO_DISCOVERY: false` line in the workflow.
+### Cutting a release
+
+`.github/workflows/release.yml` runs on a `v*` tag. It builds with electron-builder and
+then attaches the `.dmg`/`.zip` **directly to that tag's GitHub Release** via the `gh` CLI
+(creating the release if needed). Steps:
+
+```bash
+# bump the version so artifact filenames match the tag, then tag & push
+npm version 0.2.0 --no-git-tag-version   # edits package.json
+git commit -am "release v0.2.0"
+git tag v0.2.0 && git push origin main v0.2.0
+```
+
+The release appears under **Releases** with the installers attached — no draft to find.
+To ship signed & notarized builds, add `CSC_LINK` / `CSC_KEY_PASSWORD` / Apple ID secrets
+and drop the `CSC_IDENTITY_AUTO_DISCOVERY: false` line in the workflow.
 
 ## OKF conformance
 

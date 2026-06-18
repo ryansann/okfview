@@ -238,6 +238,16 @@ kbd {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.bundle-rename {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 6px;
+  outline: none;
+}
 .bundle-actions {
   display: flex;
   gap: 2px;
