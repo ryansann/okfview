@@ -18,15 +18,15 @@
 
 ### For humans
 
-<video src="docs/assets/demos/okfview-human-demo.mp4" controls muted playsinline width="100%"></video>
+[![okfview in-app demo](docs/assets/demos/okfview-human-demo.gif)](docs/assets/demos/okfview-human-demo.mp4)
 
-[Watch the in-app demo](docs/assets/demos/okfview-human-demo.mp4)
+[Watch the full in-app demo](docs/assets/demos/okfview-human-demo.mp4)
 
 ### For agents
 
-<video src="docs/assets/demos/okfview-agent-demo.mp4" controls muted playsinline width="100%"></video>
+[![okfview agent demo](docs/assets/demos/okfview-agent-demo.gif)](docs/assets/demos/okfview-agent-demo.mp4)
 
-[Watch the agent demo](docs/assets/demos/okfview-agent-demo.mp4)
+[Watch the full agent demo](docs/assets/demos/okfview-agent-demo.mp4)
 
 ## What is okfview?
 
