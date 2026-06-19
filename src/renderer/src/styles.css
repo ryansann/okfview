@@ -1237,6 +1237,45 @@ kbd {
   padding: 0;
   font-size: 13px;
 }
+.markdown .mermaid-block {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 1.2em 0;
+  padding: 16px;
+  overflow-x: auto;
+}
+.markdown .mermaid-svg {
+  min-width: 320px;
+}
+.markdown .mermaid-svg svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.markdown .mermaid-loading {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: center;
+}
+.markdown .mermaid-block.error {
+  border-color: rgba(255, 135, 135, 0.55);
+}
+.markdown .mermaid-block.error figcaption {
+  color: var(--danger);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.markdown .mermaid-block.error pre {
+  margin: 0.7em 0;
+}
+.markdown .mermaid-block.error p {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
 .markdown blockquote {
   border-left: 3px solid var(--accent);
   margin: 1em 0;
