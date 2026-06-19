@@ -14,7 +14,19 @@
 
 </div>
 
-<!-- Demo video: add a GitHub asset URL or committed media here once curated. -->
+## Demos
+
+### For humans
+
+<video src="docs/assets/demos/okfview-human-demo.mp4" controls muted playsinline width="100%"></video>
+
+[Watch the in-app demo](docs/assets/demos/okfview-human-demo.mp4)
+
+### For agents
+
+<video src="docs/assets/demos/okfview-agent-demo.mp4" controls muted playsinline width="100%"></video>
+
+[Watch the agent demo](docs/assets/demos/okfview-agent-demo.mp4)
 
 ## What is okfview?
 
