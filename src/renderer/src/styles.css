@@ -1245,6 +1245,31 @@ kbd {
   padding: 16px;
   overflow-x: auto;
 }
+.markdown .mermaid-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.markdown .mermaid-toolbar button {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  height: 28px;
+  padding: 0 10px;
+}
+.markdown .mermaid-toolbar button:hover {
+  color: var(--text);
+}
+.markdown .mermaid-toolbar button.on {
+  background: rgba(110, 168, 254, 0.16);
+  border-color: rgba(110, 168, 254, 0.42);
+  color: var(--accent);
+}
 .markdown .mermaid-svg {
   min-width: 320px;
 }
@@ -1258,6 +1283,9 @@ kbd {
   color: var(--text-dim);
   font-size: 13px;
   text-align: center;
+}
+.markdown .mermaid-source {
+  margin: 0;
 }
 .markdown .mermaid-block.error {
   border-color: rgba(255, 135, 135, 0.55);

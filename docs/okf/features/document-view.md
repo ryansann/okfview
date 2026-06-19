@@ -18,7 +18,8 @@ tags, timestamp, and a launchable `resource` link.
 
 - In-bundle links navigate internally; external links open in the browser; broken links are
   shown with a dotted underline (per the [conformance contract](/reference/conformance.md)).
-- Fenced `mermaid` code blocks render as diagrams in the current light/dark theme. If a
+- Fenced `mermaid` code blocks render as diagrams in the current light/dark theme, with a
+  per-diagram toggle for switching between the rendered diagram and Mermaid source. If a
   diagram has invalid syntax, okfview shows the source block and the Mermaid error instead
   of hiding the content.
 - A right rail shows **Referenced by** (backlinks) and **Links to**, computed by

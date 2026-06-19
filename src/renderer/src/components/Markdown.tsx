@@ -101,6 +101,7 @@ function MermaidDiagram({
 }): JSX.Element {
   const [svg, setSvg] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showSource, setShowSource] = useState(false)
   const id = useMemo(() => `mermaid-${++mermaidId}`, [])
 
   useEffect(() => {
@@ -142,7 +143,27 @@ function MermaidDiagram({
 
   return (
     <figure className="mermaid-block">
-      {svg ? (
+      <div className="mermaid-toolbar" aria-label="Mermaid view mode">
+        <button
+          type="button"
+          className={!showSource ? 'on' : ''}
+          aria-pressed={!showSource}
+          onClick={() => setShowSource(false)}
+        >
+          Diagram
+        </button>
+        <button
+          type="button"
+          className={showSource ? 'on' : ''}
+          aria-pressed={showSource}
+          onClick={() => setShowSource(true)}
+        >
+          Source
+        </button>
+      </div>
+      {showSource ? (
+        <pre className="mermaid-source">{source}</pre>
+      ) : svg ? (
         <div className="mermaid-svg" dangerouslySetInnerHTML={{ __html: svg }} />
       ) : (
         <div className="mermaid-loading">Rendering diagram...</div>
