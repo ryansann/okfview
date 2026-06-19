@@ -2,7 +2,7 @@
 
 # okfview
 
-**A desktop viewer for [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundles, with live sync, graph navigation, full-text search, and MCP access for coding agents.**
+**A configurable context bridge for your projects, docs, and coding agents, built on [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md).**
 
 [![CI](https://github.com/ryansann/okfview/actions/workflows/ci.yml/badge.svg)](https://github.com/ryansann/okfview/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ryansann/okfview?sort=semver)](https://github.com/ryansann/okfview/releases)
@@ -32,9 +32,33 @@
 
 [OKF](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) is
 Google Cloud's open standard for representing knowledge as a directory of Markdown files
-with YAML frontmatter. **okfview** is the developer tool for working with it: open any
-bundle, read it through a polished UI, watch it update live as files change, and let your
-coding agents browse it over the Model Context Protocol.
+with YAML frontmatter.
+
+**okfview** turns OKF into a shared knowledge layer across all the places you work: local
+projects, documentation folders, reference bundles, and coding agent sessions. Open the
+knowledge once, scope what should be shared, and let humans and agents browse the same live
+context over a polished desktop UI and the Model Context Protocol.
+
+Think of it as:
+
+```text
+OKF >> skills
+```
+
+Skills are useful entry points, but OKF gives you a finer-grained web of documents:
+concepts, references, backlinks, process notes, conformance checks, and relationships that
+can be progressively disclosed instead of dumped into one long prompt or one giant
+directory. That makes it a better home for tacit project knowledge: how systems are shaped,
+why decisions were made, what workflows matter, and which references an agent should use
+before touching code.
+
+## Why it matters
+
+- **Bridge every project** - keep reusable knowledge in OKF bundles and open them wherever you need context.
+- **Share context across agent sessions** - expose selected bundles over MCP instead of re-explaining the same project history.
+- **Progressively disclose knowledge** - agents can list bundles, inspect tables of contents, read one concept, follow links, and search when needed.
+- **Encode tacit process** - capture decisions, workflows, review rules, domain notes, and references as linked documents, not scattered instructions.
+- **Keep humans in the loop** - browse, validate, and edit the same knowledge graph your agents consume.
 
 ## Features
 
