@@ -10,6 +10,7 @@ import {
 import type { McpActivityEntry, McpConnection, McpStatus } from '@shared/ipc'
 import type { Bundle } from '@shared/okf/types'
 import { backlinksOf, conformanceSummary, outgoingTargets } from '@shared/okf/relations'
+import { buildTree, renderTreeText, type TreeNode } from '@shared/okf/tree'
 import { lintBundle, lintDocument } from '@shared/okf/lint'
 import { OKF_SPEC_SUMMARY, OKF_SPEC_URL, OKF_SPEC_VERSION } from '@shared/okf/spec'
 import type { Workspace } from '../workspace'
@@ -226,6 +227,14 @@ export class OkfMcpServer {
         }))
       }
 
+      case 'get_bundle_tree': {
+        const b = this.requireBundle(String(args.bundleId))
+        const tree = buildTree(b)
+        return String(args.format ?? 'text') === 'json'
+          ? { bundleId: b.id, tree: outlineTree(tree) }
+          : { bundleId: b.id, tree: renderTreeText(tree) }
+      }
+
       case 'read_concept': {
         const b = this.requireBundle(String(args.bundleId))
         const c = b.concepts.find((x) => x.id === String(args.conceptId))
@@ -290,6 +299,17 @@ export class OkfMcpServer {
     const b = this.workspace.getShared(id)
     if (!b) throw new Error(`Bundle "${id}" is not shared with agents or does not exist`)
     return b
+  }
+}
+
+function outlineTree(node: TreeNode): unknown {
+  return {
+    name: node.name,
+    path: node.path,
+    isDir: node.isDir,
+    type: node.concept?.type,
+    title: node.concept?.title,
+    children: node.children.map(outlineTree)
   }
 }
 

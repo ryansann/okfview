@@ -97,6 +97,7 @@ function registerIpc(): void {
   ipcMain.handle(IPC.getBundle, (_e, id: string) => workspace.get(id))
   ipcMain.handle(IPC.refreshBundle, (_e, id: string) => workspace.refresh(id))
   ipcMain.handle(IPC.closeBundle, (_e, id: string) => workspace.close(id))
+  ipcMain.handle(IPC.reorderBundles, (_e, ids: string[]) => workspace.reorder(ids))
   ipcMain.handle(IPC.setShared, (_e, id: string, shared: boolean) => workspace.setShared(id, shared))
   ipcMain.handle(IPC.setAlias, (_e, id: string, alias: string) => workspace.setAlias(id, alias))
   ipcMain.handle(IPC.listRecents, () => workspace.listRecents())

@@ -1,4 +1,4 @@
-import type { Bundle, Concept } from '@shared/okf/types'
+import type { Bundle, Concept } from './types'
 
 export interface TreeNode {
   name: string
@@ -42,6 +42,23 @@ export function buildTree(bundle: Bundle): TreeNode {
 
   sortTree(root)
   return root
+}
+
+export function renderTreeText(root: TreeNode): string {
+  const lines = [root.name]
+  root.children.forEach((child, index) => appendTreeLine(lines, child, '', index === root.children.length - 1))
+  return lines.join('\n')
+}
+
+function appendTreeLine(lines: string[], node: TreeNode, prefix: string, last: boolean): void {
+  const marker = last ? '`-- ' : '|-- '
+  const suffix = node.isDir ? '/' : '.md'
+  const meta = node.concept ? `  [${node.concept.type || 'unknown'}] ${node.concept.title ?? node.path}` : ''
+  lines.push(`${prefix}${marker}${node.name}${suffix}${meta}`)
+  const nextPrefix = `${prefix}${last ? '    ' : '|   '}`
+  node.children.forEach((child, index) =>
+    appendTreeLine(lines, child, nextPrefix, index === node.children.length - 1)
+  )
 }
 
 function sortTree(node: TreeNode): void {

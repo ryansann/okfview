@@ -46,6 +46,17 @@ through GitHub Actions secrets:
   certificate and private key.
 - `CSC_KEY_PASSWORD`: the `.p12` export password.
 
+Before packaging, CI decodes `CSC_LINK` into a temporary keychain and verifies that it
+contains a valid `Developer ID Application:` signing identity. The workflow then exports
+that identity as `CSC_NAME`, which forces Electron Builder to use the Developer ID
+certificate instead of another imported codesigning certificate.
+
+If Apple notarization reports `The binary is not signed with a valid Developer ID
+certificate`, the app was signed but the `.p12` is the wrong certificate class or does not
+include the matching private key. In Apple Developer, create or download a `Developer ID
+Application` certificate for the same team, install it locally, then export it from Keychain
+Access under `login` > `My Certificates` as a `.p12` and update `CSC_LINK`.
+
 The `afterPack` hook still exists for unsigned local or CI builds, but it skips ad-hoc
 signing whenever explicit certificate configuration (`CSC_LINK` or `CSC_NAME`) is
 available. Release builds therefore keep the real Developer ID signature.

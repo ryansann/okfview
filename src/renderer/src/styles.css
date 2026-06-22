@@ -190,6 +190,9 @@ kbd {
 .bundle-item.active {
   background: rgba(110, 168, 254, 0.06);
 }
+.bundle-item.dragging {
+  opacity: 0.55;
+}
 .bundle-row {
   display: flex;
   align-items: center;
@@ -197,6 +200,12 @@ kbd {
   padding: 6px 6px;
   cursor: pointer;
   border-radius: var(--radius-sm);
+}
+.bundle-row[draggable='true'] {
+  cursor: grab;
+}
+.bundle-row[draggable='true']:active {
+  cursor: grabbing;
 }
 .bundle-row:hover {
   background: var(--bg-elev2);
@@ -1077,11 +1086,15 @@ kbd {
 }
 .doc-scroll {
   overflow-y: auto;
-  padding: 38px 56px 120px;
+  padding: 0 56px 120px;
+  width: 100%;
+  animation: fadein 0.18s ease;
+}
+.doc-inner {
   max-width: 900px;
   margin: 0 auto;
   width: 100%;
-  animation: fadein 0.18s ease;
+  padding-top: 38px;
 }
 @keyframes fadein {
   from {
@@ -1364,6 +1377,30 @@ kbd {
   padding: 24px 16px;
   background: var(--panel);
 }
+.rail-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+.rail-mode button {
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  height: 30px;
+}
+.rail-mode button:hover {
+  color: var(--text);
+}
+.rail-mode button.on {
+  background: rgba(110, 168, 254, 0.15);
+  border-color: rgba(110, 168, 254, 0.45);
+  color: var(--accent);
+}
 .rail-section {
   margin-bottom: 26px;
 }
@@ -1415,6 +1452,19 @@ kbd {
   font-size: 10px;
   color: var(--text-faint);
 }
+.neighborhood-section {
+  height: calc(100% - 48px);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+.neighborhood-map {
+  flex: 1;
+  min-height: 280px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: radial-gradient(circle at 50% 45%, var(--bg-elev2) 0%, var(--panel) 75%);
+}
 
 /* ───────────────────────── Graph ───────────────────────── */
 .graph-view {
@@ -1428,12 +1478,46 @@ kbd {
   padding: 10px 14px;
   border-bottom: 1px solid var(--border);
   align-items: center;
+  flex-wrap: wrap;
 }
 .graph-controls select {
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 6px 8px;
+}
+.graph-summary {
+  display: flex;
+  flex-direction: column;
+  min-width: 132px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.graph-summary span {
+  color: var(--text-faint);
+  font-size: 10px;
+  font-weight: 600;
+}
+.graph-toggle {
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  height: 32px;
+  padding: 0 10px;
+}
+.graph-toggle:hover {
+  color: var(--text);
+}
+.graph-toggle.on {
+  background: rgba(110, 168, 254, 0.15);
+  border-color: rgba(110, 168, 254, 0.45);
+  color: var(--accent);
 }
 .graph-canvas {
   flex: 1;

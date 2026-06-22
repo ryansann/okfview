@@ -5,6 +5,7 @@ import { clockTime, relTime, uptime } from '../lib/format'
 const TOOLS = [
   'list_bundles',
   'list_concepts',
+  'get_bundle_tree',
   'read_concept',
   'search_concepts',
   'get_bundle_diagnostics',

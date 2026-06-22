@@ -15,6 +15,8 @@ okfview keeps a library of every bundle you have imported.
 
 - **Open bundles auto-restore** on the next launch (local re-reads instantly; remote
   re-syncs in the background).
+- **Open bundle order is user-controlled** — drag bundles in the sidebar to rearrange them;
+  that order is saved with the auto-restored open set.
 - **Closed bundles are remembered** — reopen them in one click from the welcome screen or the
   **Recent ▾** button in the sidebar; ✕ forgets one.
 - The recents list hides bundles that are already open, so it only offers what you can
@@ -22,6 +24,6 @@ okfview keeps a library of every bundle you have imported.
 
 # Notes
 
-Recents (`kind`, `origin`, `label`, `lastOpened`) live in the
-[JSON settings store](/decisions/json-not-sqlite.md), separate from the auto-restored open
-set. Reopen reuses the same code path as restore and the [source adapters](/architecture/source-adapters.md).
+Recents (`kind`, `origin`, `label`, `lastOpened`) and the ordered auto-restored open set live
+in the [JSON settings store](/decisions/json-not-sqlite.md). Reopen reuses the same code path
+as restore and the [source adapters](/architecture/source-adapters.md).

@@ -20,6 +20,24 @@ export const TOOLS = [
     }
   },
   {
+    name: 'get_bundle_tree',
+    description:
+      'Return a tree-shaped outline of a shared OKF bundle, similar to the Unix tree command. Useful for understanding document structure before reading individual concepts.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        bundleId: { type: 'string', description: 'Bundle id from list_bundles' },
+        format: {
+          type: 'string',
+          enum: ['text', 'json'],
+          description: 'Return an ASCII tree string or structured tree JSON. Defaults to text.'
+        }
+      },
+      required: ['bundleId'],
+      additionalProperties: false
+    }
+  },
+  {
     name: 'read_concept',
     description:
       'Read a single concept: its frontmatter, full markdown body, the concepts it links to, external links, and its backlinks (concepts that reference it).',
