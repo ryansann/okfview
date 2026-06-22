@@ -50,6 +50,10 @@ The `afterPack` hook still exists for unsigned local or CI builds, but it skips 
 signing whenever explicit certificate configuration (`CSC_LINK` or `CSC_NAME`) is
 available. Release builds therefore keep the real Developer ID signature.
 
+macOS release signing is configured explicitly for Developer ID distribution with hardened
+runtime enabled and Electron-compatible entitlements in `build/entitlements.mac.plist` and
+`build/entitlements.mac.inherit.plist`.
+
 # Notarization
 
 Release CI notarizes in two passes:
@@ -74,6 +78,9 @@ temporary `AuthKey_*.p8` file because Electron Builder and `notarytool` expect a
 Do not also pass `mac.notarize.teamId` when using API-key credentials with the current
 Electron Builder dependency chain; its `@electron/notarize` validator treats `teamId` as
 password-credential mode and rejects mixed credential shapes.
+
+The build step sets `DEBUG=electron-notarize*` so Apple rejection details are printed in
+the GitHub Actions log if notarization returns `Invalid`.
 
 After notarization, CI verifies the app signatures, Gatekeeper assessment, stapled tickets,
 and DMG integrity before publishing assets.

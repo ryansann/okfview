@@ -78,6 +78,10 @@
     "afterPack": "./scripts/after-pack-adhoc.cjs",
     "mac": {
       "category": "public.app-category.developer-tools",
+      "type": "distribution",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
       "target": [
         {
           "target": "dmg",
