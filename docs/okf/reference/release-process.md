@@ -68,10 +68,12 @@ The workflow uses these notarization secrets:
 - `APPLE_API_KEY`: contents of the App Store Connect API key `.p8` file.
 - `APPLE_API_KEY_ID`: App Store Connect API key ID.
 - `APPLE_API_ISSUER_ID`: App Store Connect issuer ID.
-- `APPLE_TEAM_ID`: Apple Developer Team ID.
 
 `APPLE_API_KEY` is stored as secret content. During the workflow it is written to a
 temporary `AuthKey_*.p8` file because Electron Builder and `notarytool` expect a file path.
+Do not also pass `mac.notarize.teamId` when using API-key credentials with the current
+Electron Builder dependency chain; its `@electron/notarize` validator treats `teamId` as
+password-credential mode and rejects mixed credential shapes.
 
 After notarization, CI verifies the app signatures, Gatekeeper assessment, stapled tickets,
 and DMG integrity before publishing assets.
