@@ -39,26 +39,45 @@ The macOS target builds `dmg` and `zip` artifacts for `arm64` and `x64`.
 
 # Signing
 
-CI currently sets `CSC_IDENTITY_AUTO_DISCOVERY=false`, so electron-builder does not look
-for a Developer ID certificate. The `afterPack` hook then applies an ad-hoc signature to
-the `.app` bundle before packaging.
+Release CI signs the app with the Apple Developer ID Application certificate supplied
+through GitHub Actions secrets:
 
-Ad-hoc signing gives Apple Silicon a valid executable signature and prevents macOS from
-showing the misleading "damaged" launch failure. It does not provide Developer ID trust or
-notarization, so first launch can still require right-clicking the app and choosing
-**Open**.
+- `CSC_LINK`: base64-encoded `.p12` export containing the Developer ID Application
+  certificate and private key.
+- `CSC_KEY_PASSWORD`: the `.p12` export password.
 
-For local maintainer builds, the hook skips ad-hoc signing when a signing identity or
-explicit certificate configuration is available. That lets electron-builder produce a real
-Developer ID signature instead of mixing ad-hoc and certificate signing.
+The `afterPack` hook still exists for unsigned local or CI builds, but it skips ad-hoc
+signing whenever explicit certificate configuration (`CSC_LINK` or `CSC_NAME`) is
+available. Release builds therefore keep the real Developer ID signature.
+
+# Notarization
+
+Release CI notarizes in two passes:
+
+1. Electron Builder notarizes and staples each signed `.app` bundle during packaging.
+2. The workflow submits each generated `.dmg` to Apple with `xcrun notarytool`, waits for
+   acceptance, and staples the DMG.
+
+The workflow bounds notarization waits so Apple-side stalls fail predictably instead of
+burning the default GitHub Actions job timeout: the build/app-signing phase has a
+75-minute step timeout, the DMG notarization phase has a 60-minute step timeout, and each
+DMG `notarytool submit --wait` call uses `--timeout 45m`.
+
+The workflow uses these notarization secrets:
+
+- `APPLE_API_KEY`: contents of the App Store Connect API key `.p8` file.
+- `APPLE_API_KEY_ID`: App Store Connect API key ID.
+- `APPLE_API_ISSUER_ID`: App Store Connect issuer ID.
+- `APPLE_TEAM_ID`: Apple Developer Team ID.
+
+`APPLE_API_KEY` is stored as secret content. During the workflow it is written to a
+temporary `AuthKey_*.p8` file because Electron Builder and `notarytool` expect a file path.
+
+After notarization, CI verifies the app signatures, Gatekeeper assessment, stapled tickets,
+and DMG integrity before publishing assets.
 
 # Publishing
 
 For tag builds, the workflow uses the GitHub CLI to create the GitHub Release and attach
 the generated `.dmg` and `.zip` files. Re-running the workflow clobbers existing assets for
 the same tag.
-
-# Future notarization
-
-To ship fully trusted macOS downloads, add Apple Developer ID signing and notarization
-secrets to the workflow, then remove `CSC_IDENTITY_AUTO_DISCOVERY=false`.
