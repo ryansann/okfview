@@ -77,9 +77,8 @@ Download the latest `.dmg` (arm64 or x64) from the
 [**Releases**](https://github.com/ryansann/okfview/releases) page and drag OKFView to
 Applications.
 
-Current public builds are ad-hoc signed but not notarized. If macOS blocks the first
-launch, right-click OKFView and choose **Open**. See [Security](SECURITY.md#packaging-and-macos-signing)
-for details.
+Public macOS releases are Developer ID signed and notarized. See
+[Security](SECURITY.md#packaging-and-macos-signing) for packaging details.
 
 Other platforms can [build from source](CONTRIBUTING.md).
 

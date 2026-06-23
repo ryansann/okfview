@@ -69,10 +69,9 @@ runtime enabled and Electron-compatible entitlements in `build/entitlements.mac.
 Release CI notarizes in two passes:
 
 1. Electron Builder notarizes and staples each signed `.app` bundle during packaging.
-2. The workflow signs each generated `.dmg` with the same Developer ID Application
-   certificate, submits it to Apple with `xcrun notarytool`, waits for acceptance, and
-   staples the DMG. Signing the disk image avoids Gatekeeper reporting
-   `source=no usable signature` during `spctl --type install` verification.
+2. The workflow submits each generated `.dmg` to Apple with `xcrun notarytool`, waits for
+   acceptance, and staples the DMG. The app bundle inside the DMG carries the Developer ID
+   signature; the disk image itself is verified by `hdiutil` and `stapler`.
 
 The workflow bounds notarization waits so Apple-side stalls fail predictably instead of
 burning the default GitHub Actions job timeout: the build/app-signing phase has a
@@ -101,8 +100,8 @@ password-credential mode and rejects mixed credential shapes.
 For local notarization troubleshooting, set `OKFVIEW_NOTARY_DEBUG=1` before `npm run dist`
 to add `electron-notarize` debug output. CI keeps notarization logs at the default level.
 
-After notarization, CI verifies the app signatures, Gatekeeper assessment, stapled tickets,
-and DMG integrity before publishing assets.
+After notarization, CI verifies the app signatures, app Gatekeeper assessment, stapled
+tickets, and DMG integrity before publishing assets.
 
 # Publishing
 
