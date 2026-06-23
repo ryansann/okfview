@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import cytoscape, { Core, ElementDefinition } from 'cytoscape'
 import type { Bundle, Concept } from '@shared/okf/types'
 import { backlinksOf, outgoingTargets } from '@shared/okf/relations'
 import { Markdown } from './Markdown'
 import { FrontmatterHeader } from './Frontmatter'
 import { colorForType } from '../lib/colors'
+import { useStore } from '../store'
 
 interface Props {
   bundle: Bundle
@@ -14,13 +16,49 @@ interface Props {
 
 export function DocumentView({ bundle, concept, onNavigate }: Props): JSX.Element {
   const openExternal = (u: string): void => void window.okf.openExternal(u)
+  const theme = useStore((s) => s.theme)
   const [railMode, setRailMode] = useState<'list' | 'map'>('list')
+  const [railWidth, setRailWidth] = useState(() => readStoredNumber('okfview.docRailWidth', 280))
+  const [railCollapsed, setRailCollapsed] = useState(() =>
+    readStoredBoolean('okfview.docRailCollapsed', false)
+  )
 
   const backlinks = useMemo(() => backlinksOf(bundle, concept.id), [bundle, concept.id])
   const outgoing = useMemo(() => outgoingTargets(concept, bundle), [bundle, concept])
 
+  const toggleRailCollapsed = (): void => {
+    setRailCollapsed((v) => {
+      localStorage.setItem('okfview.docRailCollapsed', String(!v))
+      return !v
+    })
+  }
+
+  const startRailResize = (e: ReactPointerEvent): void => {
+    if (railCollapsed) return
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = railWidth
+    let nextWidth = startWidth
+
+    const onMove = (moveEvent: PointerEvent): void => {
+      nextWidth = clamp(startWidth + startX - moveEvent.clientX, 220, 520)
+      setRailWidth(nextWidth)
+    }
+    const onUp = (): void => {
+      localStorage.setItem('okfview.docRailWidth', String(nextWidth))
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
   return (
-    <div className="document-view">
+    <div
+      className={`document-view ${railCollapsed ? 'rail-collapsed' : ''}`}
+      style={{ '--doc-rail-width': `${railWidth}px` } as CSSProperties}
+    >
       <article className="doc-scroll" key={concept.id}>
         <div className="doc-inner">
           <FrontmatterHeader concept={concept} onExternal={openExternal} />
@@ -28,26 +66,60 @@ export function DocumentView({ bundle, concept, onNavigate }: Props): JSX.Elemen
         </div>
       </article>
 
-      <aside className="doc-rail">
-        <div className="rail-mode">
-          <button className={railMode === 'list' ? 'on' : ''} onClick={() => setRailMode('list')}>
-            List
+      <div
+        className="doc-rail-resizer"
+        role="separator"
+        aria-label="Resize document sidebar"
+        aria-orientation="vertical"
+        onPointerDown={startRailResize}
+      >
+        {railCollapsed && (
+          <button
+            className="rail-expand-btn"
+            type="button"
+            aria-label="Expand document sidebar"
+            title="Expand sidebar"
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleRailCollapsed()
+            }}
+          >
+            ‹
           </button>
-          <button className={railMode === 'map' ? 'on' : ''} onClick={() => setRailMode('map')}>
-            Map
+        )}
+      </div>
+
+      <aside className="doc-rail">
+        <div className="rail-toolbar">
+          <div className="rail-mode">
+            <button className={railMode === 'list' ? 'on' : ''} onClick={() => setRailMode('list')}>
+              List
+            </button>
+            <button className={railMode === 'map' ? 'on' : ''} onClick={() => setRailMode('map')}>
+              Map
+            </button>
+          </div>
+          <button
+            className="rail-collapse-btn"
+            type="button"
+            aria-label="Collapse document sidebar"
+            title="Collapse sidebar"
+            onClick={toggleRailCollapsed}
+          >
+            ›
           </button>
         </div>
 
         {railMode === 'list' ? (
           <>
-            <RailSection title="Referenced by" count={backlinks.length}>
+            <RailSection title="Backlinks" count={backlinks.length}>
               {backlinks.map((c) => (
                 <RelRow key={c.id} concept={c} onClick={() => onNavigate(c.id)} />
               ))}
               {backlinks.length === 0 && <p className="rail-empty">No backlinks</p>}
             </RailSection>
 
-            <RailSection title="Links to" count={outgoing.length}>
+            <RailSection title="Links" count={outgoing.length}>
               {outgoing.map((c) => (
                 <RelRow key={c.id} concept={c} onClick={() => onNavigate(c.id)} />
               ))}
@@ -56,6 +128,7 @@ export function DocumentView({ bundle, concept, onNavigate }: Props): JSX.Elemen
           </>
         ) : (
           <NeighborhoodMap
+            theme={theme}
             concept={concept}
             backlinks={backlinks}
             outgoing={outgoing}
@@ -65,6 +138,23 @@ export function DocumentView({ bundle, concept, onNavigate }: Props): JSX.Elemen
       </aside>
     </div>
   )
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+function readStoredNumber(key: string, fallback: number): number {
+  const raw = localStorage.getItem(key)
+  if (!raw) return fallback
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : fallback
+}
+
+function readStoredBoolean(key: string, fallback: boolean): boolean {
+  const raw = localStorage.getItem(key)
+  if (!raw) return fallback
+  return raw === 'true'
 }
 
 function RailSection({
@@ -97,11 +187,13 @@ function RelRow({ concept, onClick }: { concept: Concept; onClick: () => void })
 }
 
 function NeighborhoodMap({
+  theme,
   concept,
   backlinks,
   outgoing,
   onNavigate
 }: {
+  theme: 'dark' | 'light'
   concept: Concept
   backlinks: Concept[]
   outgoing: Concept[]
@@ -115,6 +207,7 @@ function NeighborhoodMap({
     () => neighborhoodElements(concept, backlinks, outgoing),
     [concept, backlinks, outgoing]
   )
+  const labelColor = theme === 'light' ? '#0f172a' : '#c9d1d9'
 
   useEffect(() => {
     onNavigateRef.current = onNavigate
@@ -126,6 +219,7 @@ function NeighborhoodMap({
 
   useEffect(() => {
     if (!containerRef.current) return
+    let resizeFrame = 0
     const cy = cytoscape({
       container: containerRef.current,
       elements,
@@ -135,7 +229,7 @@ function NeighborhoodMap({
           style: {
             'background-color': 'data(color)',
             label: 'data(label)',
-            color: '#c9d1d9',
+            color: labelColor,
             'font-size': 9,
             'font-weight': 700,
             'text-valign': 'bottom',
@@ -177,18 +271,29 @@ function NeighborhoodMap({
       const id = evt.target.id()
       if (id !== conceptIdRef.current) onNavigateRef.current(id)
     })
+    const resizeToContainer = (): void => {
+      cancelAnimationFrame(resizeFrame)
+      resizeFrame = requestAnimationFrame(() => {
+        cy.resize()
+        cy.fit(cy.elements(), 28)
+      })
+    }
+    const resizeObserver = new ResizeObserver(resizeToContainer)
+    resizeObserver.observe(containerRef.current)
     cyRef.current = cy
     return () => {
+      cancelAnimationFrame(resizeFrame)
+      resizeObserver.disconnect()
       cy.destroy()
       cyRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [labelColor])
 
   useEffect(() => {
     const cy = cyRef.current
     if (!cy) return
     cy.json({ elements })
+    cy.resize()
     cy.layout({ name: 'preset', fit: true, padding: 28, animate: false } as cytoscape.LayoutOptions).run()
   }, [elements])
 

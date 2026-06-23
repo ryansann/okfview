@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import { useStore, MainView } from './store'
 import { Sidebar } from './components/Sidebar'
 import { DocumentView } from './components/DocumentView'
@@ -11,6 +12,7 @@ import { Settings } from './components/Settings'
 import { Welcome } from './components/Welcome'
 
 export default function App(): JSX.Element {
+  const [sidebarWidth, setSidebarWidth] = useState(() => readStoredNumber('okfview.sidebarWidth', 300))
   const theme = useStore((s) => s.theme)
   const view = useStore((s) => s.view)
   const setView = useStore((s) => s.setView)
@@ -75,6 +77,31 @@ export default function App(): JSX.Element {
     return () => window.removeEventListener('keydown', onKey)
   }, [togglePalette, setView, view])
 
+  useEffect(() => {
+    const hideTimers = new WeakMap<Element, number>()
+    const showScrollbarForScrolledElement = (event: Event): void => {
+      const element =
+        event.target instanceof Element ? event.target : document.scrollingElement
+      if (!element) return
+
+      element.classList.add('is-scrolling')
+      const existing = hideTimers.get(element)
+      if (existing) window.clearTimeout(existing)
+      hideTimers.set(
+        element,
+        window.setTimeout(() => {
+          element.classList.remove('is-scrolling')
+          hideTimers.delete(element)
+        }, 850)
+      )
+    }
+
+    window.addEventListener('scroll', showScrollbarForScrolledElement, true)
+    return () => {
+      window.removeEventListener('scroll', showScrollbarForScrolledElement, true)
+    }
+  }, [])
+
   const concept = activeBundle?.concepts.find((c) => c.id === activeConceptId) ?? null
   const navigate = (id: string): void => {
     if (activeBundle) openConcept(activeBundle.id, id)
@@ -88,39 +115,78 @@ export default function App(): JSX.Element {
     { key: 'diagnostics', label: 'Diagnostics' }
   ]
 
+  const startSidebarResize = (e: ReactPointerEvent): void => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = sidebarWidth
+    let nextWidth = startWidth
+
+    const onMove = (moveEvent: PointerEvent): void => {
+      nextWidth = clamp(startWidth + moveEvent.clientX - startX, 240, 520)
+      setSidebarWidth(nextWidth)
+    }
+    const onUp = (): void => {
+      localStorage.setItem('okfview.sidebarWidth', String(nextWidth))
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
   return (
-    <div className={`app theme-${theme}`}>
+    <div
+      className={`app theme-${theme}`}
+      style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}
+    >
       <Sidebar />
+      <div
+        className="sidebar-resizer"
+        role="separator"
+        aria-label="Resize bundles sidebar"
+        aria-orientation="vertical"
+        onPointerDown={startSidebarResize}
+      />
       <main className="main">
         <div className="topbar">
-          <div className="tabs">
-            {activeBundle &&
-              tabs.map((t) => (
-                <button
-                  key={t.key}
-                  className={`tab ${view === t.key ? 'active' : ''}`}
-                  onClick={() => setView(t.key)}
-                >
-                  {t.label}
-                  {t.key === 'diagnostics' && activeBundle.diagnostics.length > 0 && (
-                    <span className="tab-badge">{activeBundle.diagnostics.length}</span>
-                  )}
-                </button>
-              ))}
+          <div className="topbar-left">
+            <div className="tabs">
+              {activeBundle &&
+                tabs.map((t) => (
+                  <button
+                    key={t.key}
+                    className={`tab ${view === t.key ? 'active' : ''}`}
+                    onClick={() => setView(t.key)}
+                  >
+                    {t.label}
+                    {t.key === 'diagnostics' && activeBundle.diagnostics.length > 0 && (
+                      <span className="tab-badge">{activeBundle.diagnostics.length}</span>
+                    )}
+                  </button>
+                ))}
+            </div>
           </div>
+          <button className="topbar-search" onClick={() => togglePalette(true)}>
+            <span>Search concepts</span>
+            <kbd>⌘K</kbd>
+          </button>
           <div className="topbar-right">
             {busy && <span className="spinner" />}
-            <button className="btn ghost" onClick={() => togglePalette(true)}>
-              Search <kbd>⌘K</kbd>
-            </button>
             <McpIndicator />
-            <button className="btn ghost" onClick={toggleTheme} title="Toggle theme">
+            <button
+              className="topbar-icon-btn"
+              onClick={toggleTheme}
+              title="Toggle theme"
+              aria-label="Toggle theme"
+            >
               {theme === 'dark' ? '☀' : '☾'}
             </button>
             <button
-              className="btn ghost"
+              className="topbar-icon-btn"
               onClick={() => useStore.getState().openSettings()}
               title="Settings"
+              aria-label="Settings"
             >
               ⚙
             </button>
@@ -155,6 +221,17 @@ export default function App(): JSX.Element {
       <Toasts />
     </div>
   )
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+function readStoredNumber(key: string, fallback: number): number {
+  const raw = localStorage.getItem(key)
+  if (!raw) return fallback
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : fallback
 }
 
 function McpIndicator(): JSX.Element | null {

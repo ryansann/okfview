@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import cytoscape, { Core, ElementDefinition } from 'cytoscape'
 import type { Bundle } from '@shared/okf/types'
 import { colorForType } from '../lib/colors'
+import { useStore } from '../store'
 
 interface Props {
   bundle: Bundle
@@ -47,6 +48,7 @@ const EDGE_CLEARANCE = 38
 const graphSnapshots = new Map<string, GraphSnapshot>()
 
 export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.Element {
+  const theme = useStore((s) => s.theme)
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
   const onNavigateRef = useRef(onNavigate)
@@ -59,6 +61,9 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
   const [query, setQuery] = useState('')
   const [showAllLabels, setShowAllLabels] = useState(false)
   const [showEdges, setShowEdges] = useState(true)
+  const labelColor = theme === 'light' ? '#0f172a' : '#c9d1d9'
+  const labelBackgroundColor = theme === 'light' ? '#ffffff' : '#0d1117'
+  const labelBorderColor = theme === 'light' ? 'rgba(15,23,42,0.18)' : 'rgba(255,255,255,0.18)'
 
   const map = useMemo<KnowledgeMap>(
     () => buildKnowledgeMap(bundle, graphSnapshots.get(bundle.id)?.positions),
@@ -82,22 +87,22 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
           selector: 'node',
           style: {
             'background-color': 'data(color)',
-            label: 'data(displayLabel)',
-            color: '#c9d1d9',
+            label: '',
+            color: labelColor,
             'font-size': 'data(labelSize)',
             'font-weight': 700,
             'text-valign': 'bottom',
             'text-margin-y': 6,
             'text-max-width': '130px',
             'text-wrap': 'ellipsis',
-            'text-background-color': '#0d1117',
+            'text-background-color': labelBackgroundColor,
             'text-background-opacity': 0.72,
             'text-background-padding': '2px',
             'text-border-opacity': 0,
             width: 'data(size)',
             height: 'data(size)',
             'border-width': 1,
-            'border-color': 'rgba(255,255,255,0.18)'
+            'border-color': labelBorderColor
           }
         },
         {
@@ -117,7 +122,7 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
             opacity: 0.46
           }
         },
-        { selector: 'node.show-label', style: { label: 'data(label)' } },
+        { selector: 'node.show-label', style: { label: 'data(smartLabel)' } },
         { selector: 'node.hover', style: { label: 'data(label)', 'z-index': 20 } },
         { selector: 'node.neighbor', style: { label: 'data(label)', opacity: 1 } },
         { selector: 'node.dim', style: { opacity: 0.14 } },
@@ -177,7 +182,7 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
       cyRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [labelBackgroundColor, labelBorderColor, labelColor])
 
   // Sync elements when the bundle changes (live sync), preserving layout.
   useEffect(() => {
@@ -278,7 +283,7 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
         <button
           className={`graph-toggle ${showAllLabels ? 'on' : ''}`}
           onClick={() => setShowAllLabels((v) => !v)}
-          title="Toggle between smart labels and all labels"
+          title="Show or hide graph labels"
         >
           Labels
         </button>
@@ -368,12 +373,12 @@ function buildKnowledgeMap(
 
   const nodeElements: ElementDefinition[] = nodes.map((n) => {
     const size = nodeSize(n.centrality, n.degree)
-    const displayLabel = labelIds.has(n.id) || n.degree >= 4 ? n.label : ''
+    const smartLabel = labelIds.has(n.id) || n.degree >= 4 ? n.label : ''
     return {
       data: {
         id: n.id,
         label: n.label,
-        displayLabel,
+        smartLabel,
         type: n.type,
         group: n.group,
         color: colorForType(n.type),

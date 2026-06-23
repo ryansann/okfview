@@ -114,7 +114,7 @@ jobs:
         timeout-minutes: 10
         run: |
           set -euo pipefail
-          for app in release/mac*/okfview.app; do
+          for app in release/mac*/OKFView.app; do
             codesign --verify --deep --strict --verbose=2 "$app"
             spctl --assess --type execute --verbose=4 "$app"
             xcrun stapler validate "$app"

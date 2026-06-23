@@ -5,6 +5,7 @@ import { useStore } from '../store'
 import { colorForType } from '../lib/colors'
 import { McpPanel } from './McpPanel'
 import { RecentsList } from './RecentsList'
+import appIcon from '../../../../build/icon.png'
 
 export function Sidebar(): JSX.Element {
   const order = useStore((s) => s.order)
@@ -29,6 +30,7 @@ export function Sidebar(): JSX.Element {
   return (
     <div className="sidebar">
       <SidebarHeader />
+      <div className="bundle-list-title">Bundles</div>
       <div className="bundle-list">
         {order.length === 0 && <p className="sidebar-empty">No bundles open</p>}
         {order.map((id) => (
@@ -88,7 +90,8 @@ function SidebarHeader(): JSX.Element {
   return (
     <div className="sidebar-header">
       <div className="brand">
-        <span className="brand-mark">◆</span> okfview
+        <img className="brand-logo" src={appIcon} alt="" />
+        <span>OKFView</span>
       </div>
       <div className="open-row">
         <button

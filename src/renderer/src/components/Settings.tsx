@@ -86,13 +86,13 @@ function AboutSection(): JSX.Element {
     <div className="settings-section">
       <h2>About</h2>
       <p className="about-lead">
-        <strong>okfview</strong> — a viewer for Open Knowledge Format bundles, with live sync and an
+        <strong>OKFView</strong> — a viewer for Open Knowledge Format bundles, with live sync and an
         MCP bridge for coding agents.
       </p>
       <ul className="about-links">
         <li>
           <button className="linkish" onClick={() => open('https://github.com/ryansann/okfview')}>
-            okfview on GitHub ↗
+            OKFView on GitHub ↗
           </button>
         </li>
         <li>

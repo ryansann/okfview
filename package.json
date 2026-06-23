@@ -69,7 +69,7 @@
   },
   "build": {
     "appId": "com.ryansann.okfview",
-    "productName": "okfview",
+    "productName": "OKFView",
     "directories": {
       "output": "release"
     },

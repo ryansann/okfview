@@ -3,7 +3,7 @@ import { app, Menu, shell, MenuItemConstructorOptions } from 'electron'
 const SPEC_URL =
   'https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md'
 
-/** Build a proper application menu so the app shows as "okfview" (not "Electron"). */
+/** Build a proper application menu so the app shows as "OKFView" (not "Electron"). */
 export function buildAppMenu(): void {
   const isMac = process.platform === 'darwin'
 
@@ -33,7 +33,7 @@ export function buildAppMenu(): void {
       submenu: [
         { label: 'OKF Specification', click: () => void shell.openExternal(SPEC_URL) },
         {
-          label: 'okfview on GitHub',
+          label: 'OKFView on GitHub',
           click: () => void shell.openExternal('https://github.com/ryansann/okfview')
         }
       ]
@@ -45,5 +45,5 @@ export function buildAppMenu(): void {
 
 /** Must run before app is ready for the macOS app menu label to pick it up. */
 export function setAppName(): void {
-  app.setName('okfview')
+  app.setName('OKFView')
 }

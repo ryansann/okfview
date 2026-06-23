@@ -7,7 +7,7 @@ import { buildAppMenu, setAppName } from './menu'
 import { OkfMcpServer } from './mcp/server'
 import { loadSettings, saveSettings } from './settings'
 
-setAppName() // before app is ready so the macOS app menu shows "okfview"
+setAppName() // before app is ready so the macOS app menu shows "OKFView"
 
 const workspace = new Workspace()
 const mcp = new OkfMcpServer(workspace, app.getVersion())
@@ -43,6 +43,7 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     show: false,
+    title: 'OKFView',
     backgroundColor: '#0e1116',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: {
