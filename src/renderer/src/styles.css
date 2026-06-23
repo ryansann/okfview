@@ -1760,17 +1760,16 @@ kbd {
 }
 .graph-summary {
   display: flex;
-  flex-direction: column;
-  min-width: 132px;
+  align-items: center;
   color: var(--text);
   font-size: 12px;
-  font-weight: 800;
   line-height: 1.2;
 }
 .graph-summary span {
   color: var(--text-faint);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
 }
 .graph-toggle {
   background: var(--bg);
@@ -1790,6 +1789,26 @@ kbd {
   background: rgba(110, 168, 254, 0.15);
   border-color: rgba(110, 168, 254, 0.45);
   color: var(--accent);
+}
+.graph-mode {
+  display: inline-flex;
+}
+.graph-mode .graph-toggle {
+  border-radius: 0;
+  margin-left: -1px;
+}
+.graph-mode .graph-toggle:first-child {
+  border-top-left-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
+  margin-left: 0;
+}
+.graph-mode .graph-toggle:last-child {
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+}
+.graph-mode .graph-toggle.on {
+  position: relative;
+  z-index: 1;
 }
 .graph-canvas {
   flex: 1;

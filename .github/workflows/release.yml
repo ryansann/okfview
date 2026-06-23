@@ -106,8 +106,10 @@ jobs:
             -T /usr/bin/security
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
-          DEVELOPER_ID_IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p' | head -n 1)"
-          if [[ -z "$DEVELOPER_ID_IDENTITY" ]]; then
+          DEVELOPER_ID_LINE="$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep 'Developer ID Application:' | head -n 1 || true)"
+          DEVELOPER_ID_HASH="$(awk '{print $2}' <<< "$DEVELOPER_ID_LINE")"
+          DEVELOPER_ID_IDENTITY="$(sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p' <<< "$DEVELOPER_ID_LINE")"
+          if [[ -z "$DEVELOPER_ID_HASH" || -z "$DEVELOPER_ID_IDENTITY" ]]; then
             echo "::error::CSC_LINK does not contain a valid Developer ID Application signing identity for DMG signing."
             exit 1
           fi
@@ -117,7 +119,7 @@ jobs:
 
           for dmg in release/*.dmg; do
             echo "Signing $dmg"
-            codesign --force --sign "$DEVELOPER_ID_IDENTITY" --keychain "$KEYCHAIN_PATH" "$dmg"
+            codesign --force --sign "$DEVELOPER_ID_HASH" --keychain "$KEYCHAIN_PATH" "$dmg"
             codesign --verify --verbose=2 "$dmg"
 
             echo "Submitting $dmg for notarization"
