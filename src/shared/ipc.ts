@@ -31,6 +31,10 @@ export const IPC = {
   mcpStatus: 'mcp:status',
   mcpSetEnabled: 'mcp:set-enabled',
   mcpSetPort: 'mcp:set-port',
+  // Lint policy
+  lintConfig: 'lint:config',
+  lintSetConfig: 'lint:set-config',
+  mcpTools: 'mcp:tools',
   // main → renderer events
   bundleChanged: 'event:bundle-changed',
   bundleError: 'event:bundle-error',
@@ -68,6 +72,26 @@ export interface McpStatus {
   totalRequests: number
   connections: McpConnection[]
   recentActivity: McpActivityEntry[]
+}
+
+/** Lint strictness presets, matching okftool's profiles. */
+export type LintProfile = 'minimal' | 'recommended' | 'strict'
+
+export interface LintConfig {
+  /** Strictness preset applied as the app-wide lint policy. */
+  profile: LintProfile
+  /**
+   * When true, the app policy applies to every bundle, ignoring any per-bundle
+   * `.okftool.yaml`. When false, a bundle's own `.okftool.yaml` wins if present;
+   * otherwise the app policy is the default.
+   */
+  overrideBundleConfig: boolean
+}
+
+/** The MCP surface (tools + resources) the server exposes, for the dashboard. */
+export interface McpManifest {
+  tools: { name: string; description: string }[]
+  resources: { uri: string; name: string }[]
 }
 
 export interface BundleChangedEvent {
@@ -110,6 +134,10 @@ export interface OkfApi {
   mcpSetEnabled(enabled: boolean): Promise<McpStatus>
   mcpSetPort(port: number): Promise<McpStatus>
   onMcpChanged(cb: (s: McpStatus) => void): () => void
+  // Lint policy
+  lintConfig(): Promise<LintConfig>
+  lintSetConfig(config: LintConfig): Promise<LintConfig>
+  mcpTools(): Promise<McpManifest>
   // events
   onBundleChanged(cb: (e: BundleChangedEvent) => void): () => void
   onBundleError(cb: (e: BundleErrorEvent) => void): () => void

@@ -3,7 +3,7 @@ import type { Bundle, ConceptId } from '@shared/okf/types'
 import type { KnownBundle, McpStatus } from '@shared/ipc'
 
 export type MainView = 'document' | 'graph' | 'log' | 'diagnostics'
-export type SettingsSection = 'general' | 'mcp' | 'about'
+export type SettingsSection = 'general' | 'lint' | 'mcp' | 'about'
 
 interface Toast {
   id: number

@@ -1,18 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../store'
 import { clockTime, relTime, uptime } from '../lib/format'
-
-const TOOLS = [
-  'list_bundles',
-  'list_concepts',
-  'get_bundle_tree',
-  'read_concept',
-  'search_concepts',
-  'get_bundle_diagnostics',
-  'get_okf_spec',
-  'validate_bundle',
-  'validate_document'
-]
+import type { McpManifest } from '@shared/ipc'
 
 export function McpDashboard(): JSX.Element {
   const mcp = useStore((s) => s.mcp)
@@ -20,6 +9,11 @@ export function McpDashboard(): JSX.Element {
   const pushToast = useStore((s) => s.pushToast)
   const [port, setPort] = useState('')
   const [copied, setCopied] = useState(false)
+  const [manifest, setManifest] = useState<McpManifest | null>(null)
+
+  useEffect(() => {
+    void window.okf.mcpTools().then(setManifest)
+  }, [])
 
   const enabled = mcp?.enabled ?? false
   const running = mcp?.running ?? false
@@ -164,19 +158,33 @@ export function McpDashboard(): JSX.Element {
         )}
       </div>
 
-      {/* tools reference */}
+      {/* tools + resources reference (resolved from the live server) */}
       <div className="setting-block">
         <div className="setting-label">Tools exposed to agents</div>
         <div className="tool-chips">
-          {TOOLS.map((t) => (
-            <code key={t} className="tool-chip">
-              {t}
+          {manifest?.tools.map((t) => (
+            <code key={t.name} className="tool-chip" title={t.description}>
+              {t.name}
             </code>
           ))}
         </div>
+        {manifest && manifest.resources.length > 0 && (
+          <>
+            <div className="setting-label" style={{ marginTop: 14 }}>
+              Resources
+            </div>
+            <div className="tool-chips">
+              {manifest.resources.map((r) => (
+                <code key={r.uri} className="tool-chip" title={r.name}>
+                  {r.uri}
+                </code>
+              ))}
+            </div>
+          </>
+        )}
         <div className="setting-desc">
-          Includes <code>get_okf_spec</code>, <code>validate_bundle</code> and{' '}
-          <code>validate_document</code> so agents can learn the format and debug bundles they author.
+          <code>validate</code> checks a bundle or a draft document, and the resources let agents read
+          the OKF spec and the lint-rule catalog.
         </div>
       </div>
     </div>

@@ -2,10 +2,12 @@ import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron'
 import { execFileSync } from 'child_process'
 import { join } from 'path'
 import { IPC } from '@shared/ipc'
+import type { LintConfig } from '@shared/ipc'
 import type { Bundle, SourceKind } from '@shared/okf/types'
 import { Workspace } from './workspace'
 import { buildAppMenu, setAppName } from './menu'
 import { OkfMcpServer } from './mcp/server'
+import { TOOLS, RESOURCES } from './mcp/tools'
 import { loadSettings, saveSettings } from './settings'
 
 setAppName() // before app is ready so the macOS app menu shows "OKFView"
@@ -160,6 +162,24 @@ function registerIpc(): void {
     emitMcp()
     return s
   })
+
+  // Lint policy
+  ipcMain.handle(IPC.lintConfig, () => {
+    const s = loadSettings()
+    return { profile: s.lintProfile, overrideBundleConfig: s.lintOverrideBundleConfig }
+  })
+  ipcMain.handle(IPC.lintSetConfig, (_e, config: LintConfig) => {
+    saveSettings({
+      lintProfile: config.profile,
+      lintOverrideBundleConfig: config.overrideBundleConfig
+    })
+    workspace.relintAll() // re-lint open bundles with the new policy
+    return config
+  })
+  ipcMain.handle(IPC.mcpTools, () => ({
+    tools: TOOLS.map((t) => ({ name: t.name, description: t.description })),
+    resources: RESOURCES.map((r) => ({ uri: r.uri, name: r.name }))
+  }))
 }
 
 // In production (no dev server), lock the renderer down with a CSP response header.

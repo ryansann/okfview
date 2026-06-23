@@ -2,7 +2,7 @@ import { app } from 'electron'
 import { join } from 'path'
 import { readFileSync, writeFileSync } from 'fs'
 import type { SourceKind } from '@shared/okf/types'
-import type { KnownBundle } from '@shared/ipc'
+import type { KnownBundle, LintProfile } from '@shared/ipc'
 
 export interface PersistedBundle {
   kind: SourceKind
@@ -14,11 +14,20 @@ export interface PersistedBundle {
 export interface Settings {
   mcpEnabled: boolean
   mcpPort: number
+  lintProfile: LintProfile // app-wide lint strictness
+  lintOverrideBundleConfig: boolean // ignore per-bundle .okftool.yaml when true
   bundles: PersistedBundle[] // currently-open bundles, auto-restored on launch
   recents: KnownBundle[] // every bundle ever imported, newest first (for reopen)
 }
 
-const DEFAULTS: Settings = { mcpEnabled: false, mcpPort: 7331, bundles: [], recents: [] }
+const DEFAULTS: Settings = {
+  mcpEnabled: false,
+  mcpPort: 7331,
+  lintProfile: 'recommended',
+  lintOverrideBundleConfig: false,
+  bundles: [],
+  recents: []
+}
 
 let cache: Settings | null = null
 

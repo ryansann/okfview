@@ -22,6 +22,9 @@ const api: OkfApi = {
   mcpStatus: () => ipcRenderer.invoke(IPC.mcpStatus),
   mcpSetEnabled: (enabled) => ipcRenderer.invoke(IPC.mcpSetEnabled, enabled),
   mcpSetPort: (port) => ipcRenderer.invoke(IPC.mcpSetPort, port),
+  lintConfig: () => ipcRenderer.invoke(IPC.lintConfig),
+  lintSetConfig: (config) => ipcRenderer.invoke(IPC.lintSetConfig, config),
+  mcpTools: () => ipcRenderer.invoke(IPC.mcpTools),
   onMcpChanged: (cb) => {
     const handler = (_e: unknown, payload: McpStatus): void => cb(payload)
     ipcRenderer.on(IPC.mcpChanged, handler)
