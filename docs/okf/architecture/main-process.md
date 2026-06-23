@@ -17,13 +17,13 @@ of truth for bundle state.
 | Piece | Role |
 |---|---|
 | `index.ts` | App lifecycle, window, CSP, [menu](https://github.com/ryansann/okfview/blob/main/src/main/menu.ts), IPC registration. |
-| `workspace.ts` | The bundle registry: open/close/refresh, watching, [recents](/features/recents.md), and MCP [scoping](/features/settings-and-mcp-dashboard.md). |
+| `workspace.ts` | The bundle registry: open, close, refresh, watch, reorder, and scope bundles. |
 | `sources/` | The [source adapters](/architecture/source-adapters.md). |
-| `settings.ts` | JSON persistence — see [JSON, not SQLite](/decisions/json-not-sqlite.md). |
+| `settings.ts` | JSON persistence for recents, MCP settings, bundle order, and graph state. |
 | `mcp/` | The [MCP server](/architecture/mcp-server.md). |
 
 # Notes
 
 The workspace stamps every `Bundle.id` to its source id so the registry map key, IPC
-lookups, and the renderer all agree. It emits change events that drive [live sync](/features/live-sync.md)
-and refresh the [MCP dashboard](/features/settings-and-mcp-dashboard.md).
+lookups, and the renderer all agree. It emits change events that drive live sync and
+refresh MCP status.

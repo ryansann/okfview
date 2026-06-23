@@ -18,13 +18,13 @@ and `nodeIntegration` off. It reaches the main process only through the
 | Area | Components |
 |---|---|
 | Shell | `App`, `Sidebar`, topbar, `Settings`. |
-| Reading | [Document view](/features/document-view.md), `Markdown`, `Frontmatter`. |
-| Exploring | [Graph view](/features/graph-view.md), [command palette](/features/search.md). |
-| Surfacing | [Diagnostics](/features/diagnostics.md), `LogTimeline`, [non-conformance banner](/reference/conformance.md). |
-| Agents | [MCP dashboard](/features/settings-and-mcp-dashboard.md), `McpPanel`. |
-| Library | [Recents](/features/recents.md). |
+| Reading | Document view, `Markdown`, `Frontmatter`. |
+| Exploring | Graph view, command palette. |
+| Surfacing | Diagnostics, `LogTimeline`, non-conformance banner. |
+| Agents | MCP dashboard, `McpPanel`. |
+| Library | Recents. |
 
 # Notes
 
-State lives in a single Zustand store. On a [live-sync](/features/live-sync.md) event the
-store patches a bundle in place, preserving selection, scroll, and graph layout.
+State lives in a single Zustand store. On a live-sync event the store patches a bundle in
+place, preserving selection, scroll, and graph layout.

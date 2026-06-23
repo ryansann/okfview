@@ -32,7 +32,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "test": "vitest run",
     "inspect": "node scripts/inspect.mjs",
-    "dist": "electron-vite build && electron-builder"
+    "dist": "node scripts/dist-mac.cjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
@@ -78,8 +78,10 @@
     "afterPack": "./scripts/after-pack-adhoc.cjs",
     "mac": {
       "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png",
       "type": "distribution",
       "hardenedRuntime": true,
+      "notarize": true,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.inherit.plist",
       "target": [

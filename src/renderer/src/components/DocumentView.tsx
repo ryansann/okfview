@@ -155,13 +155,18 @@ function NeighborhoodMap({
         {
           selector: 'edge',
           style: {
-            width: 1.3,
+            width: 1.6,
             'line-color': '#4b5566',
             'target-arrow-color': '#4b5566',
-            'target-arrow-shape': 'triangle',
-            'arrow-scale': 0.55,
-            'curve-style': 'bezier',
-            opacity: 0.72
+            'source-arrow-shape': 'none',
+            'target-arrow-shape': 'triangle-backcurve',
+            'arrow-scale': 0.82,
+            'curve-style': 'unbundled-bezier',
+            'source-endpoint': 'outside-to-node',
+            'target-endpoint': 'outside-to-node',
+            'control-point-distances': 'data(controlPointDistance)',
+            'control-point-weights': 0.5,
+            opacity: 0.78
           }
         }
       ],
@@ -244,7 +249,8 @@ function neighborhoodElements(
         data: {
           id: `${entry.concept.id}->${concept.id}`,
           source: entry.concept.id,
-          target: concept.id
+          target: concept.id,
+          controlPointDistance: entry.out ? 28 : 18
         }
       })
     }
@@ -253,7 +259,8 @@ function neighborhoodElements(
         data: {
           id: `${concept.id}->${entry.concept.id}`,
           source: concept.id,
-          target: entry.concept.id
+          target: entry.concept.id,
+          controlPointDistance: entry.in ? 28 : 18
         }
       })
     }

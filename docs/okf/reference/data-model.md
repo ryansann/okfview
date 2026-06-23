@@ -9,9 +9,8 @@ timestamp: 2026-06-18T00:00:00Z
 
 # Data Model
 
-The types in `src/shared/okf/types.ts` are the contract between the
-[OKF core](/architecture/okf-core.md), the [main process](/architecture/main-process.md), and
-the [renderer](/architecture/renderer.md).
+The types in `src/shared/okf/types.ts` are the contract between the OKF core, the main
+process, and the renderer.
 
 # Schema
 
@@ -25,5 +24,5 @@ the [renderer](/architecture/renderer.md).
 # Notes
 
 A `Concept.id` is its path minus `.md`. A `Link` is resolved to either an in-bundle
-`targetId`, an `external` URL, or flagged `broken` — the basis for both the
-[graph](/features/graph-view.md) and the [document](/features/document-view.md) backlinks.
+`targetId`, an `external` URL, or flagged `broken` — the basis for graph edges and document
+backlinks.

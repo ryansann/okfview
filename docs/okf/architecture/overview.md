@@ -11,18 +11,16 @@ timestamp: 2026-06-18T00:00:00Z
 
 okfview has four parts:
 
-- The **[OKF core](/architecture/okf-core.md)** — pure TypeScript that parses OKF documents, resolves links, and builds the concept graph. No Electron or DOM dependencies, so it is unit-testable and reused everywhere (including the [MCP server](/architecture/mcp-server.md)).
-- The **[main process](/architecture/main-process.md)** — owns all I/O: the workspace registry, [source adapters](/architecture/source-adapters.md), file watching, settings persistence, and the MCP server.
+- The **[OKF core](/architecture/okf-core.md)** — pure TypeScript that parses OKF documents, resolves links, and builds the concept graph.
+- The **[main process](/architecture/main-process.md)** — owns all I/O: the workspace registry, source adapters, file watching, settings persistence, and the MCP server.
 - The **[renderer](/architecture/renderer.md)** — a sandboxed React app that is pure presentation.
 - The **[context bridge](/architecture/context-bridge.md)** — the only channel between them.
 
 # Data flow
 
-A [source adapter](/architecture/source-adapters.md) loads a bundle's files, the
-[OKF core](/architecture/okf-core.md) parses them into a [Bundle](/reference/data-model.md),
-and the workspace holds it. The renderer mirrors that state over the
-[context bridge](/architecture/context-bridge.md) and patches it live as files change —
-see [live sync](/features/live-sync.md).
+A source adapter loads a bundle's files, the OKF core parses them into a Bundle, and the
+workspace holds it. The renderer mirrors that state over the context bridge and patches it
+live as files change.
 
 # Citations
 

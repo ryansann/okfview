@@ -58,7 +58,7 @@ jobs:
           fi
 
           echo "Using signing identity: $DEVELOPER_ID_IDENTITY"
-          echo "CSC_NAME=$DEVELOPER_ID_IDENTITY" >> "$GITHUB_ENV"
+          echo "CSC_NAME=${DEVELOPER_ID_IDENTITY#Developer ID Application: }" >> "$GITHUB_ENV"
 
       - name: Build & package (signed/notarized app, dmg + zip, arm64 + x64)
         timeout-minutes: 75
@@ -68,7 +68,6 @@ jobs:
           APPLE_API_KEY_CONTENT: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER_ID }}
-          DEBUG: electron-notarize*
         run: |
           set -euo pipefail
           APPLE_API_KEY_PATH="$RUNNER_TEMP/AuthKey_${APPLE_API_KEY_ID}.p8"

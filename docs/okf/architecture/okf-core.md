@@ -10,8 +10,7 @@ timestamp: 2026-06-18T00:00:00Z
 # OKF Core
 
 `src/shared/okf/` is pure TypeScript with no Node or DOM dependencies, so the same code
-runs in tests, the [main process](/architecture/main-process.md), and (for types) the
-[renderer](/architecture/renderer.md).
+runs in tests, the main process, and (for types) the renderer.
 
 # Schema
 
@@ -21,7 +20,7 @@ runs in tests, the [main process](/architecture/main-process.md), and (for types
 | `links.ts` | Extract Markdown links; resolve absolute (`/x.md`) and relative (`../x.md`) targets. |
 | `graph.ts` | `buildBundle()` — assemble concepts, resolve the link graph, collect diagnostics. |
 | `relations.ts` | `backlinksOf`, `outgoingTargets`, `conformanceSummary`. |
-| `lint.ts` | Conformance issues with suggested fixes (used by the [MCP tools](/reference/mcp-tools.md)). |
+| `lint.ts` | Conformance issues with suggested fixes. |
 | `spec.ts` | The OKF v0.1 reference text. |
 | `types.ts` | The [data model](/reference/data-model.md). |
 

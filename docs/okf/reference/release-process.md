@@ -32,8 +32,7 @@ The workflow runs:
 - `npm ci`
 - `npm run typecheck`
 - `npm test`
-- `npx electron-vite build`
-- `npx electron-builder --mac --publish never`
+- `npm run dist -- --publish never`
 
 The macOS target builds `dmg` and `zip` artifacts for `arm64` and `x64`.
 
@@ -86,12 +85,18 @@ The workflow uses these notarization secrets:
 
 `APPLE_API_KEY` is stored as secret content. During the workflow it is written to a
 temporary `AuthKey_*.p8` file because Electron Builder and `notarytool` expect a file path.
+For local release builds, `npm run dist` performs the same normalization: `APPLE_API_KEY`
+may be either a path to `AuthKey_*.p8` or the raw `.p8` contents, and
+`APPLE_API_ISSUER_ID` is mapped to Electron Builder's expected `APPLE_API_ISSUER`.
+The wrapper refuses to run without notarization credentials unless `--no-notarize` is
+passed explicitly, which prevents accidentally producing a Developer ID signed app that
+Gatekeeper rejects as `Unnotarized Developer ID`.
 Do not also pass `mac.notarize.teamId` when using API-key credentials with the current
 Electron Builder dependency chain; its `@electron/notarize` validator treats `teamId` as
 password-credential mode and rejects mixed credential shapes.
 
-The build step sets `DEBUG=electron-notarize*` so Apple rejection details are printed in
-the GitHub Actions log if notarization returns `Invalid`.
+For local notarization troubleshooting, set `OKFVIEW_NOTARY_DEBUG=1` before `npm run dist`
+to add `electron-notarize` debug output. CI keeps notarization logs at the default level.
 
 After notarization, CI verifies the app signatures, Gatekeeper assessment, stapled tickets,
 and DMG integrity before publishing assets.
