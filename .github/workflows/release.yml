@@ -136,3 +136,28 @@ jobs:
             --generate-notes \
             release/*.dmg release/*.zip \
           || gh release upload "$GITHUB_REF_NAME" --clobber release/*.dmg release/*.zip
+
+  # Package okfview's own OKF docs bundle with okftool and attach it to the
+  # release as okfview-<version>.tar.gz. Runs on Linux (no Gatekeeper, no signing)
+  # after the release exists.
+  bundle:
+    name: docs/okf bundle (okftool)
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build docs/okf with okftool and upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }} # public-repo read works; use a PAT if okftool is private
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Install the latest okftool CLI from its GitHub releases (Linux x64).
+          gh release download --repo ryansann/okftool \
+            --pattern '*x86_64-unknown-linux-gnu.tar.gz' --dir okftool-bin --clobber
+          tar -xzf okftool-bin/*x86_64-unknown-linux-gnu.tar.gz -C okftool-bin
+          chmod +x okftool-bin/okftool
+          # `build` validates §9 conformance first, so a non-conformant docs bundle fails the release.
+          ./okftool-bin/okftool build docs/okf -o "okfview-${VERSION}.tar.gz"
+          gh release upload "$GITHUB_REF_NAME" --clobber "okfview-${VERSION}.tar.gz"
