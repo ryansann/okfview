@@ -69,8 +69,10 @@ runtime enabled and Electron-compatible entitlements in `build/entitlements.mac.
 Release CI notarizes in two passes:
 
 1. Electron Builder notarizes and staples each signed `.app` bundle during packaging.
-2. The workflow submits each generated `.dmg` to Apple with `xcrun notarytool`, waits for
-   acceptance, and staples the DMG.
+2. The workflow signs each generated `.dmg` with the same Developer ID Application
+   certificate, submits it to Apple with `xcrun notarytool`, waits for acceptance, and
+   staples the DMG. Signing the disk image avoids Gatekeeper reporting
+   `source=no usable signature` during `spctl --type install` verification.
 
 The workflow bounds notarization waits so Apple-side stalls fail predictably instead of
 burning the default GitHub Actions job timeout: the build/app-signing phase has a
@@ -81,13 +83,14 @@ The workflow uses these notarization secrets:
 
 - `APPLE_API_KEY`: contents of the App Store Connect API key `.p8` file.
 - `APPLE_API_KEY_ID`: App Store Connect API key ID.
-- `APPLE_API_ISSUER_ID`: App Store Connect issuer ID.
+- `APPLE_API_ISSUER`: App Store Connect issuer ID.
 
 `APPLE_API_KEY` is stored as secret content. During the workflow it is written to a
 temporary `AuthKey_*.p8` file because Electron Builder and `notarytool` expect a file path.
 For local release builds, `npm run dist` performs the same normalization: `APPLE_API_KEY`
 may be either a path to `AuthKey_*.p8` or the raw `.p8` contents, and
-`APPLE_API_ISSUER_ID` is mapped to Electron Builder's expected `APPLE_API_ISSUER`.
+`APPLE_API_ISSUER_ID` is still accepted locally as an alias for Electron Builder's
+expected `APPLE_API_ISSUER`.
 The wrapper refuses to run without notarization credentials unless `--no-notarize` is
 passed explicitly, which prevents accidentally producing a Developer ID signed app that
 Gatekeeper rejects as `Unnotarized Developer ID`.
