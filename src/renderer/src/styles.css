@@ -866,6 +866,28 @@ kbd {
   padding: 3px 7px;
   color: var(--text-dim);
 }
+.app-version {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: -8px 0 18px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+.app-version span,
+.app-version code {
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  max-width: 100%;
+  overflow: hidden;
+  padding: 2px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .about-links {
   list-style: none;
   padding: 0;

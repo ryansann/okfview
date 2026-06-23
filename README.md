@@ -1,6 +1,6 @@
 <div align="center">
 
-# okfview
+# OKFView
 
 **A configurable context bridge for your projects, docs, and coding agents, built on [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md).**
 
@@ -18,23 +18,23 @@
 
 ### For humans
 
-[![okfview in-app demo](docs/assets/demos/okfview-human-demo.gif)](docs/assets/demos/okfview-human-demo.mp4)
+[![OKFView in-app demo](docs/assets/demos/okfview-human-demo.gif)](docs/assets/demos/okfview-human-demo.mp4)
 
 [Watch the full in-app demo](docs/assets/demos/okfview-human-demo.mp4)
 
 ### For agents
 
-[![okfview agent demo](docs/assets/demos/okfview-agent-demo.gif)](docs/assets/demos/okfview-agent-demo.mp4)
+[![OKFView agent demo](docs/assets/demos/okfview-agent-demo.gif)](docs/assets/demos/okfview-agent-demo.mp4)
 
 [Watch the full agent demo](docs/assets/demos/okfview-agent-demo.mp4)
 
-## What is okfview?
+## What is OKFView?
 
 [OKF](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) is
 Google Cloud's open standard for representing knowledge as a directory of Markdown files
 with YAML frontmatter.
 
-**okfview** turns OKF into a shared knowledge layer across all the places you work: local
+**OKFView** turns OKF into a shared knowledge layer across all the places you work: local
 projects, documentation folders, reference bundles, and coding agent sessions. Open the
 knowledge once, scope what should be shared, and let humans and agents browse the same live
 context over a polished desktop UI and the Model Context Protocol.
@@ -74,11 +74,11 @@ before touching code.
 ## Install (macOS)
 
 Download the latest `.dmg` (arm64 or x64) from the
-[**Releases**](https://github.com/ryansann/okfview/releases) page and drag okfview to
+[**Releases**](https://github.com/ryansann/okfview/releases) page and drag OKFView to
 Applications.
 
 Current public builds are ad-hoc signed but not notarized. If macOS blocks the first
-launch, right-click okfview and choose **Open**. See [Security](SECURITY.md#packaging-and-macos-signing)
+launch, right-click OKFView and choose **Open**. See [Security](SECURITY.md#packaging-and-macos-signing)
 for details.
 
 Other platforms can [build from source](CONTRIBUTING.md).
@@ -95,7 +95,7 @@ Other platforms can [build from source](CONTRIBUTING.md).
 
 ## Documentation
 
-okfview documents itself **in the format it views**: the docs are a native, conformant OKF
+OKFView documents itself **in the format it views**: the docs are a native, conformant OKF
 bundle at [**`docs/okf/`**](docs/okf/index.md); open it in the app to browse the
 architecture, features, reference, and design decisions as a graph.
 
@@ -108,7 +108,7 @@ architecture, features, reference, and design decisions as a graph.
 
 ## Contributing
 
-okfview is open source and contributions are welcome; see
+OKFView is open source and contributions are welcome; see
 [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, the repo layout, and the PR flow. Please
 also review the [Code of Conduct](CODE_OF_CONDUCT.md), [Security Policy](SECURITY.md), and
 [Support guide](SUPPORT.md).

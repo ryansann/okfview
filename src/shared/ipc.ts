@@ -11,6 +11,7 @@ export interface KnownBundle {
 }
 
 export const IPC = {
+  appInfo: 'app:info',
   listBundles: 'workspace:list',
   openLocalDialog: 'bundle:open-local-dialog',
   openLocalPath: 'bundle:open-local-path',
@@ -79,8 +80,16 @@ export interface BundleErrorEvent {
   message: string
 }
 
+export interface AppInfo {
+  version: string
+  packaged: boolean
+  sha?: string
+  cwd?: string
+}
+
 /** The API surfaced on `window.okf` by the preload bridge. */
 export interface OkfApi {
+  appInfo(): Promise<AppInfo>
   listBundles(): Promise<BundleHandle[]>
   openLocalDialog(): Promise<Bundle | null>
   openLocalPath(path: string): Promise<Bundle | null>

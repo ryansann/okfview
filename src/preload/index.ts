@@ -3,6 +3,7 @@ import { IPC } from '@shared/ipc'
 import type { BundleChangedEvent, BundleErrorEvent, McpStatus, OkfApi } from '@shared/ipc'
 
 const api: OkfApi = {
+  appInfo: () => ipcRenderer.invoke(IPC.appInfo),
   listBundles: () => ipcRenderer.invoke(IPC.listBundles),
   openLocalDialog: () => ipcRenderer.invoke(IPC.openLocalDialog),
   openLocalPath: (path) => ipcRenderer.invoke(IPC.openLocalPath, path),

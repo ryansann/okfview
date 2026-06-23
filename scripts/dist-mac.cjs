@@ -28,9 +28,19 @@ if (keyContent) {
 const hasNotary = Boolean(env.APPLE_API_KEY && env.APPLE_API_KEY_ID && env.APPLE_API_ISSUER)
 
 if (!hasNotary && !noNotarize) {
+  const missing = [
+    ['APPLE_API_KEY', env.APPLE_API_KEY],
+    ['APPLE_API_KEY_ID', env.APPLE_API_KEY_ID],
+    ['APPLE_API_ISSUER_ID/APPLE_API_ISSUER', env.APPLE_API_ISSUER]
+  ]
+    .filter(([, value]) => !value)
+    .map(([name]) => name)
+    .join(', ')
   console.error(
     [
       'Refusing to run a macOS distribution build without notarization credentials.',
+      '',
+      `Missing: ${missing || '(unknown)'}`,
       '',
       'Set APPLE_API_KEY, APPLE_API_KEY_ID, and APPLE_API_ISSUER_ID/APPLE_API_ISSUER.',
       'APPLE_API_KEY may be either a path to AuthKey_*.p8 or the raw .p8 file contents.',

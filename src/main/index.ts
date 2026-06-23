@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron'
+import { execFileSync } from 'child_process'
 import { join } from 'path'
 import { IPC } from '@shared/ipc'
 import type { Bundle, SourceKind } from '@shared/okf/types'
@@ -19,6 +20,18 @@ function mcpStatus(): ReturnType<OkfMcpServer['status']> {
 
 function emitMcp(): void {
   send(IPC.mcpChanged, mcpStatus())
+}
+
+function devSha(): string | undefined {
+  try {
+    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim()
+  } catch {
+    return undefined
+  }
 }
 
 async function startMcp(): Promise<void> {
@@ -80,6 +93,13 @@ function registerIpc(): void {
     },
     (origin, message) => send(IPC.bundleError, { origin, message })
   )
+
+  ipcMain.handle(IPC.appInfo, () => ({
+    version: app.isPackaged ? app.getVersion() : 'dev',
+    packaged: app.isPackaged,
+    sha: app.isPackaged ? undefined : devSha(),
+    cwd: app.isPackaged ? undefined : process.cwd()
+  }))
 
   ipcMain.handle(IPC.listBundles, () => workspace.list())
 
