@@ -10,7 +10,8 @@ timestamp: 2026-06-18T00:00:00Z
 # Release Process
 
 okfview publishes macOS `.dmg` and `.zip` artifacts from the `Release (macOS)` GitHub
-Actions workflow.
+Actions workflow. Packaging follows directly from the [Electron stack](/decisions/electron-stack.md)
+decision — electron-builder turns the Node + React app into a signed desktop binary.
 
 # Trigger
 

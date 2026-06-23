@@ -34,3 +34,7 @@ Renders the bundle as a directed knowledge map: each concept is a node colored b
 The graph shows one node per concept *file* — the OKF model. (A non-standard bundle that
 encodes concepts in a manifest instead of files will look sparse; that is expected, see
 [spec-only scope](/decisions/spec-only-scope.md).)
+
+The graph is only as legible as the link structure it draws — see [graph
+authoring](/reference/graph-authoring.md) for how to write documents that produce a useful
+map instead of a hairball.

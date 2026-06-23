@@ -9,8 +9,9 @@ timestamp: 2026-06-22T00:00:00Z
 
 # Graph Authoring
 
-The OKF graph treats every resolved Markdown link as an edge. That makes links meaningful
-data, not just reader convenience.
+The [graph view](/features/graph-view.md) treats every resolved Markdown link in the
+[OKF format](/reference/okf-format.md) as an edge. That makes links meaningful data, not
+just reader convenience.
 
 # Rules
 
