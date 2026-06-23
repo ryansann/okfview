@@ -211,13 +211,16 @@ function BundleItem({
         }}
       >
         <button
-          className="twisty"
+          className={`twisty ${open ? 'open' : 'closed'}`}
+          type="button"
+          aria-label={open ? 'Collapse bundle' : 'Expand bundle'}
+          aria-expanded={open}
           onClick={(e) => {
             e.stopPropagation()
             setOpen(!open)
           }}
         >
-          {open ? '▾' : '▸'}
+          <span className="twisty-chevron" aria-hidden="true" />
         </button>
         <span className={`source-badge ${bundle.source.kind}`}>{bundle.source.kind}</span>
         {renaming ? (

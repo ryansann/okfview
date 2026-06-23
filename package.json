@@ -32,6 +32,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "test": "vitest run",
     "inspect": "node scripts/inspect.mjs",
+    "render:icon": "node scripts/render-icon.cjs",
     "dist": "node scripts/dist-mac.cjs"
   },
   "dependencies": {
@@ -44,6 +45,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/cytoscape": "^3.21.0",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",

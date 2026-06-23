@@ -1,32 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="160" y1="96" x2="864" y2="928" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#19324a"/>
-      <stop offset="0.52" stop-color="#111827"/>
-      <stop offset="1" stop-color="#0b121f"/>
-    </linearGradient>
-    <linearGradient id="edge" x1="226" y1="300" x2="812" y2="740" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6ee7b7"/>
-      <stop offset="0.5" stop-color="#60a5fa"/>
-      <stop offset="1" stop-color="#c084fc"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="28" stdDeviation="30" flood-color="#000814" flood-opacity="0.38"/>
-    </filter>
-  </defs>
-  <rect width="1024" height="1024" rx="226" fill="url(#bg)"/>
-  <circle cx="512" cy="512" r="344" fill="none" stroke="#dbeafe" stroke-opacity="0.08" stroke-width="34"/>
-  <g filter="url(#shadow)">
-    <path d="M290 330L512 214L746 356L740 628L512 798L284 640Z" fill="none" stroke="url(#edge)" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M290 330L512 512L746 356M512 512L740 628M512 512L284 640M512 214L512 512L512 798" fill="none" stroke="#e5f0ff" stroke-opacity="0.58" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="512" cy="512" r="88" fill="#f8fafc"/>
-    <circle cx="512" cy="214" r="62" fill="#6ee7b7"/>
-    <circle cx="746" cy="356" r="62" fill="#60a5fa"/>
-    <circle cx="740" cy="628" r="62" fill="#c084fc"/>
-    <circle cx="512" cy="798" r="62" fill="#fbbf24"/>
-    <circle cx="284" cy="640" r="62" fill="#f472b6"/>
-    <circle cx="290" cy="330" r="62" fill="#38bdf8"/>
-    <path d="M480 475H548C586 475 612 500 612 536C612 572 586 597 548 597H480Z" fill="#111827"/>
-    <path d="M480 429H554" stroke="#111827" stroke-width="42" stroke-linecap="round"/>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round">
+  <title>OKFView</title>
+  <desc>Three small subgraphs connected by bridges - context shared across projects.</desc>
+
+  <rect width="1024" height="1024" rx="226" fill="#F4FBF7"/>
+  <rect x="58" y="58" width="908" height="908" rx="188" stroke="#1F2A25" stroke-opacity="0.08" stroke-width="24"/>
+
+  <g>
+    <g fill="none">
+      <path d="M448 304L576 304" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M448 304L512 408" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M576 304L512 408" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M256 576L320 712" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M256 576L384 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M320 712L384 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M768 576L704 712" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M768 576L640 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M704 712L640 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M512 408L384 608" stroke="#2E9D7E" stroke-width="27"/>
+      <path d="M512 408L640 608" stroke="#2E9D7E" stroke-width="27"/>
+      <path d="M384 608L640 608" stroke="#2E9D7E" stroke-width="27"/>
+    </g>
+
+    <g fill="#1F2A25">
+      <circle cx="448" cy="304" r="30"/>
+      <circle cx="576" cy="304" r="30"/>
+      <circle cx="256" cy="576" r="30"/>
+      <circle cx="320" cy="712" r="30"/>
+      <circle cx="768" cy="576" r="30"/>
+      <circle cx="704" cy="712" r="30"/>
+    </g>
+
+    <g fill="#2E9D7E">
+      <circle cx="512" cy="408" r="34"/>
+      <circle cx="384" cy="608" r="34"/>
+      <circle cx="640" cy="608" r="34"/>
+    </g>
   </g>
 </svg>
