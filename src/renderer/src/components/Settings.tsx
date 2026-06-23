@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useStore, SettingsSection } from '../store'
 import { OKF_SPEC_SUMMARY, OKF_SPEC_URL, OKF_SPEC_VERSION } from '@shared/okf/spec'
+import type { AppInfo } from '@shared/ipc'
 import { McpDashboard } from './McpDashboard'
 
 const SECTIONS: { key: SettingsSection; label: string; icon: string }[] = [
@@ -81,7 +82,19 @@ function GeneralSection(): JSX.Element {
 
 function AboutSection(): JSX.Element {
   const [showSpec, setShowSpec] = useState(false)
+  const [appInfo, setAppInfo] = useState<AppInfo | null>(null)
   const open = (url: string): void => void window.okf.openExternal(url)
+
+  useEffect(() => {
+    let cancelled = false
+    void window.okf.appInfo().then((info) => {
+      if (!cancelled) setAppInfo(info)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div className="settings-section">
       <h2>About</h2>
@@ -89,6 +102,13 @@ function AboutSection(): JSX.Element {
         <strong>OKFView</strong> — a viewer for Open Knowledge Format bundles, with live sync and an
         MCP bridge for coding agents.
       </p>
+      {appInfo && (
+        <div className="app-version">
+          <span>{appInfo.packaged ? `v${appInfo.version}` : 'dev'}</span>
+          {!appInfo.packaged && appInfo.sha && <code>{appInfo.sha}</code>}
+          {!appInfo.packaged && appInfo.cwd && <code title={appInfo.cwd}>{appInfo.cwd}</code>}
+        </div>
+      )}
       <ul className="about-links">
         <li>
           <button className="linkish" onClick={() => open('https://github.com/ryansann/okfview')}>
