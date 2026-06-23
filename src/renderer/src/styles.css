@@ -577,6 +577,7 @@ kbd {
 }
 .seg {
   display: flex;
+  flex-shrink: 0;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -587,6 +588,7 @@ kbd {
   color: var(--text-dim);
   padding: 7px 14px;
   cursor: pointer;
+  white-space: nowrap;
 }
 .seg button.on {
   background: var(--accent-strong);
@@ -1912,11 +1914,18 @@ kbd {
   height: 9px;
   border-radius: 50%;
 }
+.diag-sev.error {
+  background: var(--error, #ff6b6b);
+}
 .diag-sev.warn {
   background: var(--warn);
 }
 .diag-sev.info {
   background: var(--accent);
+}
+.diag-fix {
+  font-size: 12px;
+  color: var(--text-faint);
 }
 .diag-item {
   display: flex;

@@ -5,16 +5,19 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
   isInitializeRequest
 } from '@modelcontextprotocol/sdk/types.js'
-import type { McpActivityEntry, McpConnection, McpStatus } from '@shared/ipc'
-import type { Bundle } from '@shared/okf/types'
+import type { LintProfile, McpActivityEntry, McpConnection, McpStatus } from '@shared/ipc'
+import type { Bundle, Concept, Diagnostic } from '@shared/okf/types'
 import { backlinksOf, conformanceSummary, outgoingTargets } from '@shared/okf/relations'
-import { buildTree, renderTreeText, type TreeNode } from '@shared/okf/tree'
-import { lintBundle, lintDocument } from '@shared/okf/lint'
-import { OKF_SPEC_SUMMARY, OKF_SPEC_URL, OKF_SPEC_VERSION } from '@shared/okf/spec'
+import { buildTree, renderTreeText } from '@shared/okf/tree'
+import { OKF_SPEC_SUMMARY } from '@shared/okf/spec'
+import { loadSettings } from '../settings'
+import { checkWithOkftool, lintDraftWithOkftool, okftoolRuleCatalog, profileToYaml } from '../okftool'
 import type { Workspace } from '../workspace'
-import { TOOLS } from './tools'
+import { TOOLS, RESOURCES } from './tools'
 
 const MAX_ACTIVITY = 200
 
@@ -175,9 +178,22 @@ export class OkfMcpServer {
   private buildServer(conn: McpConnection): Server {
     const server = new Server(
       { name: 'okfview', version: this.version },
-      { capabilities: { tools: {} } }
+      { capabilities: { tools: {}, resources: {} } }
     )
     server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
+    server.setRequestHandler(ListResourcesRequestSchema, async () => ({ resources: RESOURCES }))
+    server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
+      const uri = req.params.uri
+      if (uri === 'okf://spec') {
+        return { contents: [{ uri, mimeType: 'text/markdown', text: OKF_SPEC_SUMMARY }] }
+      }
+      if (uri === 'okf://rules') {
+        return {
+          contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(okftoolRuleCatalog(), null, 2) }]
+        }
+      }
+      throw new Error(`Unknown resource: ${uri}`)
+    })
     server.setRequestHandler(CallToolRequestSchema, async (req) => {
       const name = req.params.name
       const args = (req.params.arguments ?? {}) as Record<string, unknown>
@@ -216,23 +232,16 @@ export class OkfMcpServer {
       case 'list_bundles':
         return this.workspace.listShared().map(bundleSummary)
 
-      case 'list_concepts': {
-        const b = this.requireBundle(String(args.bundleId))
-        return b.concepts.map((c) => ({
-          conceptId: c.id,
-          title: c.title ?? c.id.split('/').pop(),
-          type: c.type,
-          description: c.description,
-          tags: c.tags
-        }))
-      }
+      case 'describe_bundle':
+        return this.describeBundle(args)
 
-      case 'get_bundle_tree': {
-        const b = this.requireBundle(String(args.bundleId))
-        const tree = buildTree(b)
-        return String(args.format ?? 'text') === 'json'
-          ? { bundleId: b.id, tree: outlineTree(tree) }
-          : { bundleId: b.id, tree: renderTreeText(tree) }
+      case 'search_concepts': {
+        const query = String(args.query ?? '').toLowerCase().trim()
+        if (!query) return []
+        const scope = args.bundleId
+          ? [this.requireBundle(String(args.bundleId))]
+          : this.workspace.listShared()
+        return searchBundles(scope, query)
       }
 
       case 'read_concept': {
@@ -255,44 +264,66 @@ export class OkfMcpServer {
         }
       }
 
-      case 'search_concepts': {
-        const query = String(args.query ?? '').toLowerCase().trim()
-        if (!query) return []
-        const scope = args.bundleId
-          ? [this.requireBundle(String(args.bundleId))]
-          : this.workspace.listShared()
-        return searchBundles(scope, query)
-      }
-
-      case 'get_bundle_diagnostics': {
-        const b = this.requireBundle(String(args.bundleId))
-        return { ...conformanceSummary(b), diagnostics: b.diagnostics }
-      }
-
-      // ---- OKF authoring / debugging tools ----
-      case 'get_okf_spec':
-        return { version: OKF_SPEC_VERSION, url: OKF_SPEC_URL, spec: OKF_SPEC_SUMMARY }
-
-      case 'validate_bundle': {
-        const b = this.requireBundle(String(args.bundleId))
-        const s = conformanceSummary(b)
-        return {
-          bundleId: b.id,
-          conformant: s.conformant,
-          summary: s,
-          issues: lintBundle(b)
-        }
-      }
-
-      case 'validate_document': {
-        const content = String(args.content ?? '')
-        if (!content.trim()) throw new Error('`content` is required')
-        return lintDocument(content, args.path ? String(args.path) : undefined)
-      }
+      case 'validate':
+        return this.validate(args)
 
       default:
         throw new Error(`Unknown tool: ${name}`)
     }
+  }
+
+  private describeBundle(args: Record<string, unknown>): unknown {
+    const b = this.requireBundle(String(args.bundleId))
+    const include = Array.isArray(args.include) ? args.include.map(String) : []
+    const out: Record<string, unknown> = {
+      bundleId: b.id,
+      label: b.label,
+      source: { kind: b.source.kind, origin: b.source.origin },
+      okfVersion: b.okfVersion,
+      conceptCount: b.concepts.length,
+      conformant: conformanceSummary(b).conformant,
+      diagnostics: diagnosticSummary(b.diagnostics),
+      lint: this.workspace.lintInfoFor(b.id) ?? undefined
+    }
+    if (include.includes('tree')) out.tree = renderTreeText(buildTree(b))
+    if (include.includes('concepts')) out.concepts = b.concepts.map(tocEntry)
+    if (include.includes('vocabulary')) out.vocabulary = vocabulary(b)
+    if (include.includes('graph')) out.graph = graphSummary(b)
+    return out
+  }
+
+  private validate(args: Record<string, unknown>): unknown {
+    const strictness = args.strictness ? String(args.strictness) : 'app'
+
+    // Draft mode: a raw document not in any bundle.
+    if (args.content !== undefined) {
+      const content = String(args.content)
+      if (!content.trim()) throw new Error('`content` is required')
+      const cfg = configForStrictness(strictness)
+      const result = lintDraftWithOkftool(content, args.path ? String(args.path) : 'draft.md', cfg.yaml)
+      return { ranUnder: cfg.label, ...result }
+    }
+
+    // Bundle mode.
+    if (args.bundleId !== undefined) {
+      const b = this.requireBundle(String(args.bundleId))
+      if (strictness === 'app') {
+        // Cached diagnostics under the app policy (honours per-bundle .okftool.yaml).
+        const info = this.workspace.lintInfoFor(b.id)
+        return {
+          bundleId: b.id,
+          ranUnder: info?.profile ?? 'app',
+          conformant: conformanceSummary(b).conformant,
+          diagnostics: b.diagnostics
+        }
+      }
+      const files = this.workspace.sharedRawFiles(b.id)
+      if (!files) throw new Error(`Bundle "${b.id}" is not shared`)
+      const result = checkWithOkftool(files, profileToYaml(strictness as LintProfile))
+      return { bundleId: b.id, ranUnder: strictness, conformant: result.conformant, diagnostics: result.diagnostics }
+    }
+
+    throw new Error('Pass either `bundleId` (check a shared bundle) or `content` (check a draft)')
   }
 
   private requireBundle(id: string): Bundle {
@@ -302,15 +333,97 @@ export class OkfMcpServer {
   }
 }
 
-function outlineTree(node: TreeNode): unknown {
-  return {
-    name: node.name,
-    path: node.path,
-    isDir: node.isDir,
-    type: node.concept?.type,
-    title: node.concept?.title,
-    children: node.children.map(outlineTree)
+/** Resolve a strictness arg to a `.okftool.yaml` config + a label for `ranUnder`. */
+function configForStrictness(strictness: string): { yaml: string; label: string } {
+  if (strictness === 'app') {
+    const profile = loadSettings().lintProfile
+    return { yaml: profileToYaml(profile), label: profile }
   }
+  return { yaml: profileToYaml(strictness as LintProfile), label: strictness }
+}
+
+function tocEntry(c: Concept): unknown {
+  return {
+    conceptId: c.id,
+    title: c.title ?? c.id.split('/').pop(),
+    type: c.type,
+    description: c.description,
+    tags: c.tags
+  }
+}
+
+function diagnosticSummary(diags: Diagnostic[]): unknown {
+  const sev = { error: 0, warn: 0, info: 0 }
+  const byCode: Record<string, number> = {}
+  for (const d of diags) {
+    if (d.severity in sev) sev[d.severity as keyof typeof sev]++
+    byCode[d.code] = (byCode[d.code] ?? 0) + 1
+  }
+  return { total: diags.length, ...sev, byCode }
+}
+
+function vocabulary(b: Bundle): unknown {
+  const types: Record<string, number> = {}
+  const tags: Record<string, number> = {}
+  for (const c of b.concepts) {
+    if (c.type) types[c.type] = (types[c.type] ?? 0) + 1
+    for (const t of c.tags) tags[t] = (tags[t] ?? 0) + 1
+  }
+  const sorted = (m: Record<string, number>): { name: string; count: number }[] =>
+    Object.entries(m)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, z) => z.count - a.count)
+  return { types: sorted(types), tags: sorted(tags) }
+}
+
+function graphSummary(b: Bundle): unknown {
+  const out = new Map<string, number>()
+  const inn = new Map<string, number>()
+  const adj = new Map<string, Set<string>>()
+  for (const c of b.concepts) {
+    out.set(c.id, 0)
+    inn.set(c.id, 0)
+    adj.set(c.id, new Set())
+  }
+  for (const c of b.concepts) {
+    const seen = new Set<string>()
+    for (const l of c.outgoing) {
+      const t = l.targetId
+      if (t && t !== c.id && out.has(t) && !seen.has(t)) {
+        seen.add(t)
+        out.set(c.id, (out.get(c.id) ?? 0) + 1)
+        inn.set(t, (inn.get(t) ?? 0) + 1)
+        adj.get(c.id)?.add(t)
+        adj.get(t)?.add(c.id)
+      }
+    }
+  }
+  const orphans = b.concepts
+    .filter((c) => (out.get(c.id) ?? 0) === 0 && (inn.get(c.id) ?? 0) === 0)
+    .map((c) => c.id)
+  const topHubs = b.concepts
+    .map((c) => ({ conceptId: c.id, outDegree: out.get(c.id) ?? 0 }))
+    .filter((h) => h.outDegree > 0)
+    .sort((a, z) => z.outDegree - a.outDegree)
+    .slice(0, 5)
+  const visited = new Set<string>()
+  let components = 0
+  for (const c of b.concepts) {
+    if (visited.has(c.id)) continue
+    components++
+    const stack = [c.id]
+    visited.add(c.id)
+    while (stack.length) {
+      const id = stack.pop() as string
+      for (const n of adj.get(id) ?? []) {
+        if (!visited.has(n)) {
+          visited.add(n)
+          stack.push(n)
+        }
+      }
+    }
+  }
+  return { orphans: { count: orphans.length, conceptIds: orphans.slice(0, 25) }, topHubs, components }
 }
 
 function bundleSummary(b: Bundle): unknown {
@@ -329,8 +442,10 @@ function bundleSummary(b: Bundle): unknown {
 
 function summarizeArgs(tool: string, args: Record<string, unknown>): string {
   if (tool === 'search_concepts') return `"${String(args.query ?? '')}"`
-  if (tool === 'validate_document') return `${String(args.content ?? '').length} chars`
+  if (tool === 'validate' && args.content !== undefined) return `${String(args.content).length} chars`
   const parts = [args.bundleId, args.conceptId].filter(Boolean).map(String)
+  if (args.strictness && args.strictness !== 'app') parts.push(`@${String(args.strictness)}`)
+  if (Array.isArray(args.include) && args.include.length) parts.push(`+${args.include.join(',')}`)
   return parts.join(' / ')
 }
 

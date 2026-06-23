@@ -4,7 +4,11 @@ import type { RawFile } from '@shared/okf/types'
 
 const IGNORE_DIRS = new Set(['.git', 'node_modules', '.svn', '.hg', '.DS_Store'])
 
-/** Recursively read every `.md` file under `root` into bundle-relative RawFiles. */
+/**
+ * Recursively read every `.md` file under `root` into bundle-relative RawFiles,
+ * plus the bundle-root `.okftool.yaml`/`.okftool.yml` lint config if present (so
+ * the linter's per-bundle policy travels with the bundle).
+ */
 export async function readBundleFiles(root: string): Promise<RawFile[]> {
   const out: RawFile[] = []
   async function walk(dir: string): Promise<void> {
@@ -14,15 +18,18 @@ export async function readBundleFiles(root: string): Promise<RawFile[]> {
     } catch {
       return
     }
+    const atRoot = dir === root
     for (const e of entries) {
       if (e.name.startsWith('.') && e.name !== '.') {
         if (IGNORE_DIRS.has(e.name)) continue
       }
       const full = join(dir, e.name)
+      const lower = e.name.toLowerCase()
+      const isRootConfig = atRoot && (lower === '.okftool.yaml' || lower === '.okftool.yml')
       if (e.isDirectory()) {
         if (IGNORE_DIRS.has(e.name)) continue
         await walk(full)
-      } else if (e.isFile() && e.name.toLowerCase().endsWith('.md')) {
+      } else if (e.isFile() && (lower.endsWith('.md') || isRootConfig)) {
         try {
           const content = await fs.readFile(full, 'utf8')
           out.push({ path: relative(root, full).split(sep).join('/'), content })

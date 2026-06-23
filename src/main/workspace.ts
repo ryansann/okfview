@@ -1,6 +1,7 @@
-import type { Bundle, BundleHandle, SourceKind } from '@shared/okf/types'
+import type { Bundle, BundleHandle, Diagnostic, RawBundle, RawFile, SourceKind } from '@shared/okf/types'
 import type { KnownBundle } from '@shared/ipc'
 import { buildBundle } from '@shared/okf/graph'
+import { lintWithOkftool, profileToYaml } from './okftool'
 import type { Source } from './sources/types'
 import { LocalFolderSource } from './sources/local'
 import { GitSource } from './sources/git'
@@ -14,6 +15,7 @@ interface Entry {
   source: Source
   bundle: Bundle
   spec: PersistedBundle // how to reopen + share flag
+  rawFiles: RawFile[] // kept so a lint-policy change can re-lint without re-reading
   disposeWatch?: () => void
 }
 
@@ -43,6 +45,35 @@ export class Workspace {
 
   get(id: string): Bundle | null {
     return this.entries.get(id)?.bundle ?? null
+  }
+
+  /**
+   * Resolve the lint config and run okftool. With "override" on, the app policy
+   * applies to every bundle; with it off, a bundle's own `.okftool.yaml` wins.
+   */
+  private resolveDiagnostics(files: RawFile[]): Diagnostic[] {
+    const settings = loadSettings()
+    let configYaml = profileToYaml(settings.lintProfile)
+    if (!settings.lintOverrideBundleConfig) {
+      const own = files.find((f) => f.path === '.okftool.yaml' || f.path === '.okftool.yml')
+      if (own) configYaml = own.content
+    }
+    return lintWithOkftool(files, configYaml)
+  }
+
+  /** okfview builds the concept/graph model; okftool owns the diagnostics. */
+  private buildWithDiagnostics(raw: RawBundle): Bundle {
+    const bundle = buildBundle(raw)
+    bundle.diagnostics = this.resolveDiagnostics(raw.files)
+    return bundle
+  }
+
+  /** Re-lint every open bundle (after a lint-policy change). */
+  relintAll(): void {
+    for (const [id, entry] of this.entries) {
+      entry.bundle.diagnostics = this.resolveDiagnostics(entry.rawFiles)
+      this.onChange(id, entry.bundle)
+    }
   }
 
   openLocal(dir: string, shared = true, alias?: string): Promise<Bundle> {
@@ -77,11 +108,11 @@ export class Workspace {
     }
 
     const raw = await source.load()
-    const bundle = buildBundle(raw)
+    const bundle = this.buildWithDiagnostics(raw)
     bundle.id = source.id // canonical identity: matches the workspace map key
     bundle.shared = spec.shared
     bundle.label = this.labelFor(spec)
-    const entry: Entry = { source, bundle, spec }
+    const entry: Entry = { source, bundle, spec, rawFiles: raw.files }
     this.entries.set(source.id, entry)
 
     const disposeWatch = source.watch(() => void this.reload(source.id))
@@ -123,7 +154,8 @@ export class Workspace {
     if (!entry) return
     try {
       const raw = await entry.source.load()
-      entry.bundle = buildBundle(raw)
+      entry.bundle = this.buildWithDiagnostics(raw)
+      entry.rawFiles = raw.files
       entry.bundle.id = id
       entry.bundle.shared = entry.spec.shared
       entry.bundle.label = this.labelFor(entry.spec)
@@ -139,7 +171,8 @@ export class Workspace {
     try {
       await entry.source.refresh()
       const raw = await entry.source.load()
-      entry.bundle = buildBundle(raw)
+      entry.bundle = this.buildWithDiagnostics(raw)
+      entry.rawFiles = raw.files
       entry.bundle.id = id
       entry.bundle.shared = entry.spec.shared
       entry.bundle.label = this.labelFor(entry.spec)
@@ -195,6 +228,24 @@ export class Workspace {
   getShared(id: string): Bundle | null {
     const entry = this.entries.get(id)
     return entry && entry.spec.shared ? entry.bundle : null
+  }
+
+  /** Raw files for a shared bundle (for re-linting under a strictness override). */
+  sharedRawFiles(id: string): RawFile[] | null {
+    const entry = this.entries.get(id)
+    return entry && entry.spec.shared ? entry.rawFiles : null
+  }
+
+  /** The effective lint policy in force for a bundle (for describe_bundle). */
+  lintInfoFor(id: string): { profile: string; source: 'app-policy' | 'bundle' } | null {
+    const entry = this.entries.get(id)
+    if (!entry) return null
+    const settings = loadSettings()
+    const hasOwn = entry.rawFiles.some((f) => f.path === '.okftool.yaml' || f.path === '.okftool.yml')
+    if (!settings.lintOverrideBundleConfig && hasOwn) {
+      return { profile: 'custom', source: 'bundle' }
+    }
+    return { profile: settings.lintProfile, source: 'app-policy' }
   }
 
   close(id: string): void {

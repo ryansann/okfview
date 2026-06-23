@@ -6,7 +6,7 @@ import type { Bundle } from './types'
 export interface LintIssue {
   file: string
   code: string
-  severity: 'info' | 'warn'
+  severity: 'info' | 'warn' | 'error'
   message: string
   fix?: string
 }

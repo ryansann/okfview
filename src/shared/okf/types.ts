@@ -63,12 +63,13 @@ export interface LogFile {
   days: LogDay[]
 }
 
-export type DiagnosticSeverity = 'info' | 'warn'
+export type DiagnosticSeverity = 'info' | 'warn' | 'error'
 export interface Diagnostic {
   severity: DiagnosticSeverity
   code: string
   file: string
   message: string
+  fix?: string // optional actionable suggestion (from okftool)
 }
 
 export interface Bundle {
