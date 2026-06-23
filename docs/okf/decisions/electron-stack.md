@@ -18,7 +18,8 @@ plus a React [renderer](/architecture/renderer.md).
   Node territory.
 - The UI quality bar is high; that is web-tech's strength (Markdown rendering, the Cytoscape
   [graph](/features/graph-view.md)).
-- Electron packages both into a cross-platform desktop binary installable from the repo.
+- Electron packages both into a cross-platform desktop binary installable from the repo —
+  see the [release process](/reference/release-process.md) for how it is built, signed, and shipped.
 
 # Trade-offs
 
