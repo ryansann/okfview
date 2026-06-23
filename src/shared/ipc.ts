@@ -19,6 +19,7 @@ export const IPC = {
   getBundle: 'bundle:get',
   refreshBundle: 'bundle:refresh',
   closeBundle: 'bundle:close',
+  reorderBundles: 'bundle:reorder',
   setShared: 'bundle:set-shared',
   setAlias: 'bundle:set-alias',
   listRecents: 'bundle:list-recents',
@@ -88,6 +89,7 @@ export interface OkfApi {
   getBundle(id: string): Promise<Bundle | null>
   refreshBundle(id: string): Promise<Bundle | null>
   closeBundle(id: string): Promise<void>
+  reorderBundles(ids: string[]): Promise<void>
   setShared(id: string, shared: boolean): Promise<Bundle | null>
   setAlias(id: string, alias: string): Promise<Bundle | null>
   listRecents(): Promise<KnownBundle[]>

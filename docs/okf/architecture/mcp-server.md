@@ -16,8 +16,7 @@ workspace, so agents see edits in realtime.
 
 # Schema
 
-- Reads serve from the [OKF core](/architecture/okf-core.md): `relations.ts` for links and
-  `lint.ts` for conformance.
+- Reads serve from the OKF core: `relations.ts` for links and `lint.ts` for conformance.
 - Per-session transports are tracked as connections (client name/version captured at
   initialize); every tool call is recorded into an activity ring buffer.
 - The full tool set is documented in [MCP tools](/reference/mcp-tools.md).
@@ -26,4 +25,4 @@ workspace, so agents see edits in realtime.
 
 Because the SDK is ESM and the main bundle is CJS, the SDK and `zod` are bundled into the
 main output rather than externalized. Status (connections, activity, uptime) is pushed to
-the renderer and rendered by the [MCP dashboard](/features/settings-and-mcp-dashboard.md).
+the renderer and rendered by the MCP dashboard.

@@ -206,6 +206,18 @@ export class Workspace {
     this.persist()
   }
 
+  reorder(ids: string[]): void {
+    const requested = ids.filter((id) => this.entries.has(id))
+    const remaining = [...this.entries.keys()].filter((id) => !requested.includes(id))
+    const next = new Map<string, Entry>()
+    for (const id of [...requested, ...remaining]) {
+      const entry = this.entries.get(id)
+      if (entry) next.set(id, entry)
+    }
+    this.entries = next
+    this.persist()
+  }
+
   /** Reopen bundles persisted from a previous session. */
   async restore(): Promise<void> {
     const { bundles } = loadSettings()

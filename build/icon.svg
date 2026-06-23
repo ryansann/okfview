@@ -1,0 +1,39 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round">
+  <title>OKFView</title>
+  <desc>Three small subgraphs connected by bridges - context shared across projects.</desc>
+
+  <rect width="1024" height="1024" rx="226" fill="#F4FBF7"/>
+  <rect x="58" y="58" width="908" height="908" rx="188" stroke="#1F2A25" stroke-opacity="0.08" stroke-width="24"/>
+
+  <g>
+    <g fill="none">
+      <path d="M448 304L576 304" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M448 304L512 408" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M576 304L512 408" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M256 576L320 712" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M256 576L384 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M320 712L384 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M768 576L704 712" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M768 576L640 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M704 712L640 608" stroke="#1F2A25" stroke-width="22"/>
+      <path d="M512 408L384 608" stroke="#2E9D7E" stroke-width="27"/>
+      <path d="M512 408L640 608" stroke="#2E9D7E" stroke-width="27"/>
+      <path d="M384 608L640 608" stroke="#2E9D7E" stroke-width="27"/>
+    </g>
+
+    <g fill="#1F2A25">
+      <circle cx="448" cy="304" r="30"/>
+      <circle cx="576" cy="304" r="30"/>
+      <circle cx="256" cy="576" r="30"/>
+      <circle cx="320" cy="712" r="30"/>
+      <circle cx="768" cy="576" r="30"/>
+      <circle cx="704" cy="712" r="30"/>
+    </g>
+
+    <g fill="#2E9D7E">
+      <circle cx="512" cy="408" r="34"/>
+      <circle cx="384" cy="608" r="34"/>
+      <circle cx="640" cy="608" r="34"/>
+    </g>
+  </g>
+</svg>

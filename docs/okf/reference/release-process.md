@@ -32,8 +32,7 @@ The workflow runs:
 - `npm ci`
 - `npm run typecheck`
 - `npm test`
-- `npx electron-vite build`
-- `npx electron-builder --mac --publish never`
+- `npm run dist -- --publish never`
 
 The macOS target builds `dmg` and `zip` artifacts for `arm64` and `x64`.
 
@@ -45,6 +44,17 @@ through GitHub Actions secrets:
 - `CSC_LINK`: base64-encoded `.p12` export containing the Developer ID Application
   certificate and private key.
 - `CSC_KEY_PASSWORD`: the `.p12` export password.
+
+Before packaging, CI decodes `CSC_LINK` into a temporary keychain and verifies that it
+contains a valid `Developer ID Application:` signing identity. The workflow then exports
+that identity as `CSC_NAME`, which forces Electron Builder to use the Developer ID
+certificate instead of another imported codesigning certificate.
+
+If Apple notarization reports `The binary is not signed with a valid Developer ID
+certificate`, the app was signed but the `.p12` is the wrong certificate class or does not
+include the matching private key. In Apple Developer, create or download a `Developer ID
+Application` certificate for the same team, install it locally, then export it from Keychain
+Access under `login` > `My Certificates` as a `.p12` and update `CSC_LINK`.
 
 The `afterPack` hook still exists for unsigned local or CI builds, but it skips ad-hoc
 signing whenever explicit certificate configuration (`CSC_LINK` or `CSC_NAME`) is
@@ -75,12 +85,18 @@ The workflow uses these notarization secrets:
 
 `APPLE_API_KEY` is stored as secret content. During the workflow it is written to a
 temporary `AuthKey_*.p8` file because Electron Builder and `notarytool` expect a file path.
+For local release builds, `npm run dist` performs the same normalization: `APPLE_API_KEY`
+may be either a path to `AuthKey_*.p8` or the raw `.p8` contents, and
+`APPLE_API_ISSUER_ID` is mapped to Electron Builder's expected `APPLE_API_ISSUER`.
+The wrapper refuses to run without notarization credentials unless `--no-notarize` is
+passed explicitly, which prevents accidentally producing a Developer ID signed app that
+Gatekeeper rejects as `Unnotarized Developer ID`.
 Do not also pass `mac.notarize.teamId` when using API-key credentials with the current
 Electron Builder dependency chain; its `@electron/notarize` validator treats `teamId` as
 password-credential mode and rejects mixed credential shapes.
 
-The build step sets `DEBUG=electron-notarize*` so Apple rejection details are printed in
-the GitHub Actions log if notarization returns `Invalid`.
+For local notarization troubleshooting, set `OKFVIEW_NOTARY_DEBUG=1` before `npm run dist`
+to add `electron-notarize` debug output. CI keeps notarization logs at the default level.
 
 After notarization, CI verifies the app signatures, Gatekeeper assessment, stapled tickets,
 and DMG integrity before publishing assets.

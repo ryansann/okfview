@@ -1,23 +1,48 @@
 import { useMemo, useState } from 'react'
 import type { Bundle } from '@shared/okf/types'
+import { buildTree, type TreeNode } from '@shared/okf/tree'
 import { useStore } from '../store'
-import { buildTree, TreeNode } from '../lib/tree'
 import { colorForType } from '../lib/colors'
 import { McpPanel } from './McpPanel'
 import { RecentsList } from './RecentsList'
+import appIcon from '../../../../build/icon.png'
 
 export function Sidebar(): JSX.Element {
   const order = useStore((s) => s.order)
   const bundles = useStore((s) => s.bundles)
   const activeBundleId = useStore((s) => s.activeBundleId)
+  const reorderBundles = useStore((s) => s.reorderBundles)
+  const pushToast = useStore((s) => s.pushToast)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+
+  const moveBundle = (targetId: string): void => {
+    if (!draggingId || draggingId === targetId) return
+    const from = order.indexOf(draggingId)
+    const to = order.indexOf(targetId)
+    if (from < 0 || to < 0) return
+    const next = [...order]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+    reorderBundles(next)
+    void window.okf.reorderBundles(next).catch((e) => pushToast('error', (e as Error).message))
+  }
 
   return (
     <div className="sidebar">
       <SidebarHeader />
+      <div className="bundle-list-title">Bundles</div>
       <div className="bundle-list">
         {order.length === 0 && <p className="sidebar-empty">No bundles open</p>}
         {order.map((id) => (
-          <BundleItem key={id} bundle={bundles[id]} active={id === activeBundleId} />
+          <BundleItem
+            key={id}
+            bundle={bundles[id]}
+            active={id === activeBundleId}
+            dragging={id === draggingId}
+            onDragStart={() => setDraggingId(id)}
+            onDragEnd={() => setDraggingId(null)}
+            onDrop={() => moveBundle(id)}
+          />
         ))}
       </div>
       <McpPanel />
@@ -65,7 +90,8 @@ function SidebarHeader(): JSX.Element {
   return (
     <div className="sidebar-header">
       <div className="brand">
-        <span className="brand-mark">◆</span> okfview
+        <img className="brand-logo" src={appIcon} alt="" />
+        <span>OKFView</span>
       </div>
       <div className="open-row">
         <button
@@ -105,7 +131,21 @@ function SidebarHeader(): JSX.Element {
   )
 }
 
-function BundleItem({ bundle, active }: { bundle: Bundle; active: boolean }): JSX.Element {
+function BundleItem({
+  bundle,
+  active,
+  dragging,
+  onDragStart,
+  onDragEnd,
+  onDrop
+}: {
+  bundle: Bundle
+  active: boolean
+  dragging: boolean
+  onDragStart: () => void
+  onDragEnd: () => void
+  onDrop: () => void
+}): JSX.Element {
   const selectBundle = useStore((s) => s.selectBundle)
   const closeBundle = useStore((s) => s.closeBundle)
   const pushToast = useStore((s) => s.pushToast)
@@ -151,22 +191,39 @@ function BundleItem({ bundle, active }: { bundle: Bundle; active: boolean }): JS
   }
 
   return (
-    <div className={`bundle-item ${active ? 'active' : ''}`}>
+    <div
+      className={`bundle-item ${active ? 'active' : ''} ${dragging ? 'dragging' : ''}`}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault()
+        onDrop()
+      }}
+    >
       <div
         className="bundle-row"
+        draggable={!renaming}
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = 'move'
+          e.dataTransfer.setData('text/plain', bundle.id)
+          onDragStart()
+        }}
+        onDragEnd={onDragEnd}
         onClick={() => {
           setOpen(true)
           selectBundle(bundle.id)
         }}
       >
         <button
-          className="twisty"
+          className={`twisty ${open ? 'open' : 'closed'}`}
+          type="button"
+          aria-label={open ? 'Collapse bundle' : 'Expand bundle'}
+          aria-expanded={open}
           onClick={(e) => {
             e.stopPropagation()
             setOpen(!open)
           }}
         >
-          {open ? '▾' : '▸'}
+          <span className="twisty-chevron" aria-hidden="true" />
         </button>
         <span className={`source-badge ${bundle.source.kind}`}>{bundle.source.kind}</span>
         {renaming ? (

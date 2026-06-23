@@ -27,7 +27,7 @@ export function Welcome(): JSX.Element {
     <div className="welcome">
       <div className="welcome-card">
         <div className="welcome-mark">◆</div>
-        <h1>okfview</h1>
+        <h1>OKFView</h1>
         <p className="welcome-sub">
           A viewer for <strong>Open Knowledge Format</strong> bundles — local or remote, kept
           live as files change.

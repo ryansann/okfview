@@ -38,6 +38,7 @@ interface State {
   upsertBundle(bundle: Bundle, makeActive?: boolean): void
   applyChange(bundle: Bundle): void
   closeBundle(id: string): void
+  reorderBundles(ids: string[]): void
   selectBundle(id: string): void
   selectConcept(id: ConceptId | null): void
   openConceptInBundle(bundleId: string, conceptId: ConceptId): void
@@ -123,6 +124,13 @@ export const useStore = create<State>((set, get) => ({
         activeConceptId:
           s.activeBundleId === id ? (nextBundle?.concepts[0]?.id ?? null) : s.activeConceptId
       }
+    }),
+
+  reorderBundles: (ids) =>
+    set((s) => {
+      const known = ids.filter((id) => s.bundles[id])
+      const missing = s.order.filter((id) => !known.includes(id))
+      return { order: [...known, ...missing] }
     }),
 
   selectBundle: (id) =>

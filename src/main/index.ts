@@ -7,7 +7,7 @@ import { buildAppMenu, setAppName } from './menu'
 import { OkfMcpServer } from './mcp/server'
 import { loadSettings, saveSettings } from './settings'
 
-setAppName() // before app is ready so the macOS app menu shows "okfview"
+setAppName() // before app is ready so the macOS app menu shows "OKFView"
 
 const workspace = new Workspace()
 const mcp = new OkfMcpServer(workspace, app.getVersion())
@@ -43,6 +43,7 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     show: false,
+    title: 'OKFView',
     backgroundColor: '#0e1116',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: {
@@ -97,6 +98,7 @@ function registerIpc(): void {
   ipcMain.handle(IPC.getBundle, (_e, id: string) => workspace.get(id))
   ipcMain.handle(IPC.refreshBundle, (_e, id: string) => workspace.refresh(id))
   ipcMain.handle(IPC.closeBundle, (_e, id: string) => workspace.close(id))
+  ipcMain.handle(IPC.reorderBundles, (_e, ids: string[]) => workspace.reorder(ids))
   ipcMain.handle(IPC.setShared, (_e, id: string, shared: boolean) => workspace.setShared(id, shared))
   ipcMain.handle(IPC.setAlias, (_e, id: string, alias: string) => workspace.setAlias(id, alias))
   ipcMain.handle(IPC.listRecents, () => workspace.listRecents())
