@@ -315,6 +315,7 @@ function applyModeAndLayout(cy: Core, mode: LayoutMode, map: KnowledgeMap, bundl
       n.toggleClass('show-label', constellation && !!n.data('showLabel'))
     })
     cy.edges().toggleClass('taxi-edge', mode === 'layered')
+    cy.edges().toggleClass('soft', constellation)
   })
 
   const snapshot = graphSnapshots.get(snapshotKey(bundleId, mode))
@@ -398,7 +399,7 @@ function elkOptions(map: KnowledgeMap): LayoutOptions {
 
 function fcoseOptions(map: KnowledgeMap): LayoutOptions {
   const n = map.nodeCount
-  const spread = n <= 12 ? 1.25 : n <= 30 ? 1.1 : n <= 60 ? 1 : 0.85
+  const spread = n <= 12 ? 1.25 : n <= 30 ? 1.15 : n <= 60 ? 1.05 : 0.95
   return {
     name: 'fcose',
     quality: 'proof',
@@ -412,12 +413,15 @@ function fcoseOptions(map: KnowledgeMap): LayoutOptions {
     tile: true,
     tilingPaddingVertical: 16,
     tilingPaddingHorizontal: 16,
-    nodeSeparation: 90 * spread,
-    idealEdgeLength: () => 110 * spread,
-    edgeElasticity: () => 0.5,
-    nodeRepulsion: () => 9000,
-    gravity: 0.4,
-    gravityRange: 2.6,
+    nodeSeparation: 110 * spread,
+    // Push spokes off hubs proportionally to how connected the busier endpoint is,
+    // so high-degree nodes don't collapse their neighbors into a crossing knot.
+    idealEdgeLength: (edge: cytoscape.EdgeSingular) =>
+      (120 + 9 * Math.min(8, Math.max(edge.source().degree(false), edge.target().degree(false)))) * spread,
+    edgeElasticity: () => 0.45,
+    nodeRepulsion: () => 13000,
+    gravity: 0.28,
+    gravityRange: 3.4,
     numIter: 2500
   } as unknown as LayoutOptions
 }
@@ -567,6 +571,12 @@ function graphStylesheet(palette: Palette): cytoscape.StylesheetStyle[] {
     {
       selector: 'edge.bidir',
       style: { 'source-arrow-shape': 'triangle', 'source-arrow-color': palette.edgeColor }
+    },
+    // Constellation edges recede into the background so the dense web reads as
+    // texture, not noise; hover/selection brings the relevant ones forward.
+    {
+      selector: 'edge.soft',
+      style: { opacity: 0.38, width: 'data(width)', 'arrow-scale': 0.75 }
     },
     // Layered edges: orthogonal "circuit board" routing matching the top-down flow.
     {

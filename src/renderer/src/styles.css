@@ -1097,10 +1097,9 @@ kbd {
   min-height: 66px;
   padding-top: 16px;
   padding-bottom: 10px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(280px, 42vw, 440px) minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  column-gap: 18px;
+  gap: 16px;
   padding-left: 18px;
   padding-right: 16px;
   border-bottom: 1px solid var(--border);
@@ -1108,8 +1107,8 @@ kbd {
   -webkit-app-region: drag;
 }
 .topbar-left {
-  min-width: 0;
-  justify-self: start;
+  min-width: 0; /* allow the tabs to clip before the search/icons give way */
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1178,13 +1177,14 @@ kbd {
   padding: 0 6px;
 }
 .topbar-search {
-  width: 100%;
+  flex: 0 1 440px; /* prefer 440px, shrink on narrow windows… */
+  margin: 0 auto; /* …and stay centered when there is room to spare */
+  min-width: 0;
   height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  justify-self: center;
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
@@ -1194,6 +1194,12 @@ kbd {
   text-align: left;
   -webkit-app-region: no-drag;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+.topbar-search > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .topbar-search:hover {
   border-color: rgba(110, 168, 254, 0.45);
@@ -1209,8 +1215,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: none;
-  justify-self: end;
+  flex: none; /* never shrink — status icons stay fully visible */
 }
 .topbar-icon-btn {
   width: 38px;
