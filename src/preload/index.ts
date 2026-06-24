@@ -9,6 +9,7 @@ const api: OkfApi = {
   openLocalPath: (path) => ipcRenderer.invoke(IPC.openLocalPath, path),
   openGit: (url) => ipcRenderer.invoke(IPC.openGit, url),
   openHttp: (url) => ipcRenderer.invoke(IPC.openHttp, url),
+  openSample: () => ipcRenderer.invoke(IPC.openSample),
   getBundle: (id) => ipcRenderer.invoke(IPC.getBundle, id),
   refreshBundle: (id) => ipcRenderer.invoke(IPC.refreshBundle, id),
   closeBundle: (id) => ipcRenderer.invoke(IPC.closeBundle, id),

@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron'
 import { execFileSync } from 'child_process'
+import { existsSync } from 'fs'
 import { join } from 'path'
 import { IPC } from '@shared/ipc'
 import type { LintConfig } from '@shared/ipc'
@@ -87,6 +88,27 @@ function send(channel: string, payload: unknown): void {
   mainWindow?.webContents.send(channel, payload)
 }
 
+// The "Explore a sample" bundle is okfview's own docs, dogfooded end to end: a
+// packaged build fetches the okftool-built bundle attached to the matching GitHub
+// release over the HTTP/tarball source. okftool's `build` nests the bundle under
+// an `okfview-<version>/` prefix dir, so the URL carries that as a `#subpath`.
+// In dev there is no release for the working version, so we open the repo's
+// docs/okf directly. Not shared to MCP by default — the user opts in.
+const SAMPLE_REPO = 'ryansann/okfview'
+const SAMPLE_ALIAS = 'OKFView docs'
+
+function openSampleBundle(): Promise<Bundle> {
+  if (app.isPackaged) {
+    const v = app.getVersion()
+    const stem = `okfview-${v}`
+    const url = `https://github.com/${SAMPLE_REPO}/releases/download/v${v}/${stem}.tar.gz#${stem}`
+    return workspace.openHttp(url, false, SAMPLE_ALIAS)
+  }
+  const dev = [join(app.getAppPath(), 'docs', 'okf'), join(process.cwd(), 'docs', 'okf')]
+  const dir = dev.find((p) => existsSync(p)) ?? dev[0]
+  return workspace.openLocal(dir, false, SAMPLE_ALIAS)
+}
+
 function registerIpc(): void {
   workspace.setListeners(
     (id, bundle) => {
@@ -117,6 +139,7 @@ function registerIpc(): void {
   ipcMain.handle(IPC.openLocalPath, (_e, path: string) => workspace.openLocal(path))
   ipcMain.handle(IPC.openGit, (_e, url: string) => workspace.openGit(url))
   ipcMain.handle(IPC.openHttp, (_e, url: string) => workspace.openHttp(url))
+  ipcMain.handle(IPC.openSample, () => openSampleBundle())
   ipcMain.handle(IPC.getBundle, (_e, id: string) => workspace.get(id))
   ipcMain.handle(IPC.refreshBundle, (_e, id: string) => workspace.refresh(id))
   ipcMain.handle(IPC.closeBundle, (_e, id: string) => workspace.close(id))

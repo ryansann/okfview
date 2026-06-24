@@ -13,7 +13,28 @@ export function Sidebar(): JSX.Element {
   const activeBundleId = useStore((s) => s.activeBundleId)
   const reorderBundles = useStore((s) => s.reorderBundles)
   const pushToast = useStore((s) => s.pushToast)
+  const upsert = useStore((s) => s.upsertBundle)
+  const setBusy = useStore((s) => s.setBusy)
+  const refreshRecents = useStore((s) => s.refreshRecents)
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [loadingSample, setLoadingSample] = useState(false)
+
+  const exploreSample = async (): Promise<void> => {
+    setBusy(true)
+    setLoadingSample(true)
+    try {
+      const b = await window.okf.openSample()
+      if (b) {
+        upsert(b)
+        await refreshRecents()
+      }
+    } catch (e) {
+      pushToast('error', `Couldn't load the sample bundle: ${(e as Error).message}`)
+    } finally {
+      setLoadingSample(false)
+      setBusy(false)
+    }
+  }
 
   const moveBundle = (targetId: string): void => {
     if (!draggingId || draggingId === targetId) return
@@ -32,7 +53,15 @@ export function Sidebar(): JSX.Element {
       <SidebarHeader />
       <div className="bundle-list-title">Bundles</div>
       <div className="bundle-list">
-        {order.length === 0 && <p className="sidebar-empty">No bundles open</p>}
+        {order.length === 0 && (
+          <div className="sidebar-empty">
+            <p>No bundles open</p>
+            <button className="btn" onClick={exploreSample} disabled={loadingSample}>
+              {loadingSample ? 'Loading…' : 'Explore a sample'}
+            </button>
+            <p className="sidebar-empty-hint">okfview&apos;s own docs, fetched from its latest release</p>
+          </div>
+        )}
         {order.map((id) => (
           <BundleItem
             key={id}
@@ -281,7 +310,7 @@ function BundleItem({
       {open && (
         <div className="tree">
           {tree.children.map((n) => (
-            <TreeRow key={n.path} node={n} depth={0} bundleId={bundle.id} />
+            <TreeRow key={treeKey(n)} node={n} depth={0} bundleId={bundle.id} />
           ))}
         </div>
       )}
@@ -319,7 +348,7 @@ function TreeRow({
         </div>
         {open &&
           node.children.map((c) => (
-            <TreeRow key={c.path} node={c} depth={depth + 1} bundleId={bundleId} />
+            <TreeRow key={treeKey(c)} node={c} depth={depth + 1} bundleId={bundleId} />
           ))}
       </div>
     )
@@ -339,6 +368,12 @@ function TreeRow({
       <span className="tree-label tree-file">{node.concept?.title || node.name}</span>
     </div>
   )
+}
+
+// A dir and a sibling concept can share a path (e.g. `workflows/` + `workflows.md`),
+// so qualify the React key by kind to keep it unique.
+function treeKey(node: TreeNode): string {
+  return `${node.isDir ? 'd' : 'f'}:${node.path}`
 }
 
 // Concepts under a directory node (recursive), for the folder count badge.
