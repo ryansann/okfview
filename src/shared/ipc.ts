@@ -17,6 +17,7 @@ export const IPC = {
   openLocalPath: 'bundle:open-local-path',
   openGit: 'bundle:open-git',
   openHttp: 'bundle:open-http',
+  openSample: 'bundle:open-sample',
   getBundle: 'bundle:get',
   refreshBundle: 'bundle:refresh',
   closeBundle: 'bundle:close',
@@ -119,6 +120,7 @@ export interface OkfApi {
   openLocalPath(path: string): Promise<Bundle | null>
   openGit(url: string): Promise<Bundle | null>
   openHttp(url: string): Promise<Bundle | null>
+  openSample(): Promise<Bundle | null>
   getBundle(id: string): Promise<Bundle | null>
   refreshBundle(id: string): Promise<Bundle | null>
   closeBundle(id: string): Promise<void>

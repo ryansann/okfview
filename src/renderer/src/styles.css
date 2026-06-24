@@ -231,6 +231,21 @@ kbd {
   padding: 12px;
   text-align: center;
 }
+.sidebar-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 12px;
+}
+.sidebar-empty p {
+  margin: 0;
+}
+.sidebar-empty-hint {
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: 0.8;
+}
 .bundle-item {
   border-radius: var(--radius-sm);
   margin-bottom: 4px;
