@@ -303,12 +303,19 @@ function TreeRow({
   const activeBundleId = useStore((s) => s.activeBundleId)
   const openConcept = useStore((s) => s.openConceptInBundle)
 
+  // One vertical guide per ancestor level, so nesting is visible at a glance.
+  const guides = Array.from({ length: depth }, (_, i) => <span key={i} className="tree-indent" />)
+
   if (node.isDir) {
     return (
       <div>
-        <div className="tree-row dir" style={{ paddingLeft: 8 + depth * 14 }} onClick={() => setOpen(!open)}>
-          <span className="tree-twisty">{open ? '▾' : '▸'}</span>
-          <span className="tree-folder">{node.name}</span>
+        <div className="tree-row dir" onClick={() => setOpen(!open)}>
+          {guides}
+          <span className="tree-gutter">
+            <span className={`tree-twisty ${open ? 'open' : ''}`}>{open ? '▾' : '▸'}</span>
+          </span>
+          <span className="tree-label tree-folder">{node.name}</span>
+          <span className="tree-count">{countConcepts(node)}</span>
         </div>
         {open &&
           node.children.map((c) => (
@@ -322,12 +329,20 @@ function TreeRow({
   return (
     <div
       className={`tree-row file ${selected ? 'selected' : ''}`}
-      style={{ paddingLeft: 8 + depth * 14 }}
       onClick={() => openConcept(bundleId, node.path)}
       title={node.concept?.type}
     >
-      <span className="tree-dot" style={{ background: colorForType(node.concept?.type ?? '') }} />
-      <span className="tree-file">{node.concept?.title || node.name}</span>
+      {guides}
+      <span className="tree-gutter">
+        <span className="tree-dot" style={{ background: colorForType(node.concept?.type ?? '') }} />
+      </span>
+      <span className="tree-label tree-file">{node.concept?.title || node.name}</span>
     </div>
   )
+}
+
+// Concepts under a directory node (recursive), for the folder count badge.
+function countConcepts(node: TreeNode): number {
+  if (!node.isDir) return 1
+  return node.children.reduce((n, c) => n + countConcepts(c), 0)
 }

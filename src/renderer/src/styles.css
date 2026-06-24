@@ -291,10 +291,8 @@ kbd {
 .tree-twisty {
   color: var(--text-faint);
   cursor: pointer;
-  width: 14px;
-  padding: 0;
-  font-size: 10px;
-  text-align: center;
+  font-size: 9px;
+  line-height: 1;
   flex: none;
 }
 .source-badge {
@@ -1019,7 +1017,6 @@ kbd {
 .tree-row {
   display: flex;
   align-items: center;
-  gap: 6px;
   padding: 3px 6px;
   cursor: pointer;
   border-radius: 5px;
@@ -1042,19 +1039,52 @@ kbd {
 .theme-light .tree-folder {
   color: var(--text);
 }
+/* Indent guide: one 16px column per ancestor level, each with a centered hairline
+   so deep nesting reads as a clear set of vertical rails. */
+.tree-indent {
+  width: 16px;
+  flex: none;
+  align-self: stretch;
+  position: relative;
+}
+.tree-indent::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--border);
+}
+/* Marker column shared by folder twisties and file dots, so every label — file or
+   folder, at any depth — starts at the same x. */
+.tree-gutter {
+  width: 16px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tree-label {
+  margin-left: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .tree-folder {
   color: var(--text-dim);
-  font-weight: 500;
+  font-weight: 600;
+}
+.tree-count {
+  margin-left: auto;
+  padding-left: 8px;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 .tree-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex: none;
-}
-.tree-file {
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ───────────────────────── Main ───────────────────────── */
@@ -1067,10 +1097,9 @@ kbd {
   min-height: 66px;
   padding-top: 16px;
   padding-bottom: 10px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(280px, 42vw, 440px) minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  column-gap: 18px;
+  gap: 16px;
   padding-left: 18px;
   padding-right: 16px;
   border-bottom: 1px solid var(--border);
@@ -1078,8 +1107,39 @@ kbd {
   -webkit-app-region: drag;
 }
 .topbar-left {
-  min-width: 0;
-  justify-self: start;
+  min-width: 0; /* allow the tabs to clip before the search/icons give way */
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.history-nav {
+  display: inline-flex;
+  gap: 2px;
+  flex: none;
+  -webkit-app-region: no-drag;
+}
+.history-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.history-btn:hover:not(:disabled) {
+  background: var(--bg-elev2);
+  color: var(--text);
+}
+.history-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 .tabs {
   display: flex;
@@ -1117,13 +1177,14 @@ kbd {
   padding: 0 6px;
 }
 .topbar-search {
-  width: 100%;
+  flex: 0 1 440px; /* prefer 440px, shrink on narrow windows… */
+  margin: 0 auto; /* …and stay centered when there is room to spare */
+  min-width: 0;
   height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  justify-self: center;
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
@@ -1133,6 +1194,12 @@ kbd {
   text-align: left;
   -webkit-app-region: no-drag;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+.topbar-search > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .topbar-search:hover {
   border-color: rgba(110, 168, 254, 0.45);
@@ -1148,8 +1215,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: none;
-  justify-self: end;
+  flex: none; /* never shrink — status icons stay fully visible */
 }
 .topbar-icon-btn {
   width: 38px;
@@ -1745,6 +1811,7 @@ kbd {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 .graph-controls {
   display: flex;
@@ -1760,18 +1827,27 @@ kbd {
   border-radius: var(--radius-sm);
   padding: 6px 8px;
 }
-.graph-summary {
-  display: flex;
-  align-items: center;
+.graph-info {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 7px 11px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  user-select: none;
+  line-height: 1.45;
+}
+.graph-info-main {
   color: var(--text);
   font-size: 12px;
-  line-height: 1.2;
+  font-weight: 700;
 }
-.graph-summary span {
+.graph-info-sub {
   color: var(--text-faint);
   font-size: 11px;
   font-weight: 600;
-  white-space: nowrap;
 }
 .graph-toggle {
   background: var(--bg);
@@ -1791,6 +1867,54 @@ kbd {
   background: rgba(110, 168, 254, 0.15);
   border-color: rgba(110, 168, 254, 0.45);
   color: var(--accent);
+}
+.graph-focus {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 220px;
+}
+.graph-focus-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px 0 10px;
+  background: rgba(110, 168, 254, 0.12);
+  border: 1px solid rgba(110, 168, 254, 0.45);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.graph-focus-chip .focus-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.focus-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.graph-focus-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 32px;
+  background: rgba(110, 168, 254, 0.12);
+  border: 1px solid rgba(110, 168, 254, 0.45);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 11px;
+}
+.graph-focus-x:hover {
+  color: var(--text);
+  background: rgba(110, 168, 254, 0.2);
 }
 .graph-mode {
   display: inline-flex;
