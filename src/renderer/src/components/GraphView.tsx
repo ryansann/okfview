@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import cytoscape, { Core, ElementDefinition, LayoutOptions } from 'cytoscape'
 import fcose from 'cytoscape-fcose'
 import elk from 'cytoscape-elk'
@@ -23,6 +23,9 @@ interface KnowledgeMap {
   elements: ElementDefinition[]
   nodeCount: number
   edgeCount: number
+  orphanCount: number // concepts with no links in or out
+  clusterCount: number // connected components (treating links as undirected)
+  reciprocalCount: number // A↔B mutual links (drawn as one double-arrow edge)
 }
 
 interface GraphSnapshot {
@@ -45,11 +48,14 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
   const modeRef = useRef<LayoutMode>('constellation')
   const skipBundleEffectRef = useRef(true)
   const skipModeEffectRef = useRef(true)
-  const previousActiveConceptIdRef = useRef(activeConceptId)
   const [mode, setMode] = useState<LayoutMode>('constellation')
   const [typeFilter, setTypeFilter] = useState('')
-  const [query, setQuery] = useState('')
   const [showEdges, setShowEdges] = useState(true)
+  // The concept carried over from the document view. Its node + neighbors stay lit
+  // (everything else faded, like a sticky hover) until the user clears it; re-syncs
+  // whenever navigation changes the active concept.
+  const [focusedId, setFocusedId] = useState<string | null>(activeConceptId)
+  const focusedIdRef = useRef<string | null>(activeConceptId)
 
   const palette = useMemo(() => themePalette(theme), [theme])
   const map = useMemo<KnowledgeMap>(() => buildKnowledgeMap(bundle), [bundle])
@@ -60,6 +66,28 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
   useEffect(() => {
     modeRef.current = mode
   }, [mode])
+  useEffect(() => {
+    focusedIdRef.current = focusedId
+  }, [focusedId])
+
+  // Sticky selection: the focused node + its neighbors lit, everything else faded —
+  // the same treatment as hover, but persistent. Reads the ref so the (once-bound)
+  // cy event handlers can call it.
+  const paintSelection = useCallback(() => {
+    const cy = cyRef.current
+    if (!cy) return
+    cy.batch(() => {
+      cy.elements().removeClass('lit faded active')
+      const id = focusedIdRef.current
+      if (!id) return
+      const node = cy.getElementById(id)
+      if (node.empty()) return
+      const hood = node.closedNeighborhood()
+      hood.addClass('lit')
+      cy.elements().not(hood).addClass('faded')
+      node.addClass('active')
+    })
+  }, [])
 
   // Create the cytoscape instance once (re-created on theme change so colors apply).
   useEffect(() => {
@@ -81,11 +109,15 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
     cy.on('tap', 'node', (evt) => onNavigateRef.current(evt.target.id()))
     cy.on('mouseover', 'node', (evt) => {
       const node = evt.target
+      cy.elements().removeClass('lit faded')
       node.addClass('hover')
       node.closedNeighborhood().addClass('lit')
       cy.elements().not(node.closedNeighborhood()).addClass('faded')
     })
-    cy.on('mouseout', 'node', () => cy.elements().removeClass('hover lit faded'))
+    cy.on('mouseout', 'node', (evt) => {
+      evt.target.removeClass('hover')
+      paintSelection() // restore the sticky selection the hover temporarily replaced
+    })
 
     let saveTimer: number | null = null
     const scheduleSave = (): void => {
@@ -142,55 +174,38 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
     cyRef.current?.edges().toggleClass('hidden', !showEdges)
   }, [showEdges])
 
-  // Highlight active concept + type filter + search matches.
+  // A fresh navigation re-selects that concept in the graph.
+  useEffect(() => {
+    setFocusedId(activeConceptId)
+  }, [activeConceptId])
+
+  // Type filter dims non-matching nodes (independent of the selection highlight).
   useEffect(() => {
     const cy = cyRef.current
     if (!cy) return
     cy.batch(() => {
-      cy.elements().removeClass('dim active match')
-      if (typeFilter) {
-        cy.nodes().forEach((n) => {
-          if (n.data('type') !== typeFilter) n.addClass('dim')
-        })
-        cy.edges().forEach((e) => {
-          if (e.source().hasClass('dim') || e.target().hasClass('dim')) e.addClass('dim')
-        })
-      }
-      const q = query.trim().toLowerCase()
-      if (q) {
-        cy.nodes().forEach((n) => {
-          if (`${n.data('label')} ${n.id()} ${n.data('type')}`.toLowerCase().includes(q)) n.addClass('match')
-        })
-      }
-      if (activeConceptId) {
-        const node = cy.getElementById(activeConceptId)
-        if (node.nonempty()) node.addClass('active')
-      }
+      cy.elements().removeClass('dim')
+      if (!typeFilter) return
+      cy.nodes().forEach((n) => {
+        if (n.data('type') !== typeFilter) n.addClass('dim')
+      })
+      cy.edges().forEach((e) => {
+        if (e.source().hasClass('dim') || e.target().hasClass('dim')) e.addClass('dim')
+      })
     })
-  }, [typeFilter, query, activeConceptId, map])
+  }, [typeFilter, map])
 
-  // Center when navigation changes the active concept.
+  // Repaint the sticky selection when it changes or the graph rebuilds.
   useEffect(() => {
-    const cy = cyRef.current
-    if (!cy) return
-    const previous = previousActiveConceptIdRef.current
-    previousActiveConceptIdRef.current = activeConceptId
-    if (!activeConceptId || activeConceptId === previous) return
-    const node = cy.getElementById(activeConceptId)
-    if (node.nonempty()) cy.animate({ center: { eles: node } }, { duration: 220 })
-  }, [activeConceptId])
+    paintSelection()
+  }, [focusedId, map, paintSelection])
+
+  const focusConcept = focusedId ? (bundle.concepts.find((c) => c.id === focusedId) ?? null) : null
 
   return (
     <div className="graph-view">
       <div className="graph-controls">
         <div className="graph-mode" role="group" aria-label="Layout mode">
-          <button
-            className={`graph-toggle ${mode === 'layered' ? 'on' : ''}`}
-            onClick={() => setMode('layered')}
-            title="Layered: directed top-down hierarchy, minimal edge crossings"
-          >
-            Layered
-          </button>
           <button
             className={`graph-toggle ${mode === 'constellation' ? 'on' : ''}`}
             onClick={() => setMode('constellation')}
@@ -198,18 +213,45 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
           >
             Constellation
           </button>
+          <button
+            className={`graph-toggle ${mode === 'layered' ? 'on' : ''}`}
+            onClick={() => setMode('layered')}
+            title="Layered: directed top-down hierarchy, minimal edge crossings"
+          >
+            Layered
+          </button>
         </div>
-        <div className="graph-summary">
-          <span>
-            {map.nodeCount} concepts / {map.edgeCount} links
-          </span>
-        </div>
-        <input
-          className="graph-search"
-          placeholder="Highlight…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        {focusConcept ? (
+          <div
+            className="graph-focus"
+            title={`Selected: ${focusConcept.title || focusConcept.id} — its neighbors are highlighted`}
+          >
+            <span className="graph-focus-chip">
+              <span className="focus-dot" style={{ background: colorForType(focusConcept.type) }} />
+              <span className="focus-label">
+                {focusConcept.title || focusConcept.id.split('/').pop()}
+              </span>
+            </span>
+            <button
+              className="graph-focus-x"
+              aria-label="Clear selection"
+              title="Clear selection"
+              onClick={() => setFocusedId(null)}
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          activeConceptId && (
+            <button
+              className="graph-toggle"
+              onClick={() => setFocusedId(activeConceptId)}
+              title="Select the current document's concept and highlight its neighbors"
+            >
+              Select current
+            </button>
+          )
+        )}
         <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
           <option value="">All types ({bundle.types.length})</option>
           {bundle.types.map((t) => (
@@ -248,6 +290,15 @@ export function GraphView({ bundle, activeConceptId, onNavigate }: Props): JSX.E
         </button>
       </div>
       <div className="graph-canvas" ref={containerRef} />
+      <div className="graph-info">
+        <div className="graph-info-main">
+          {map.nodeCount} concepts · {map.edgeCount} links
+        </div>
+        <div className="graph-info-sub">
+          {map.clusterCount} {map.clusterCount === 1 ? 'cluster' : 'clusters'} · {map.orphanCount}{' '}
+          {map.orphanCount === 1 ? 'orphan' : 'orphans'} · {map.reciprocalCount} mutual
+        </div>
+      </div>
     </div>
   )
 }
@@ -512,6 +563,11 @@ function graphStylesheet(palette: Palette): cytoscape.StylesheetStyle[] {
         opacity: 0.42
       }
     },
+    // Reciprocal link: one edge with an arrowhead on each end.
+    {
+      selector: 'edge.bidir',
+      style: { 'source-arrow-shape': 'triangle', 'source-arrow-color': palette.edgeColor }
+    },
     // Layered edges: orthogonal "circuit board" routing matching the top-down flow.
     {
       selector: 'edge.taxi-edge',
@@ -537,6 +593,7 @@ function graphStylesheet(palette: Palette): cytoscape.StylesheetStyle[] {
       style: {
         'line-color': 'data(color)',
         'target-arrow-color': 'data(color)',
+        'source-arrow-color': 'data(color)',
         opacity: 0.95,
         width: 2.4,
         'z-index': 15
@@ -544,8 +601,7 @@ function graphStylesheet(palette: Palette): cytoscape.StylesheetStyle[] {
     },
     { selector: 'node.hover', style: { 'border-width': 3, 'z-index': 30 } },
     { selector: 'node.active', style: { 'border-width': 4, 'border-color': palette.activeBorder, 'z-index': 40 } },
-    { selector: 'node.constellation.active', style: { 'background-color': palette.activeBorder } },
-    { selector: 'node.match', style: { 'border-width': 3, 'border-color': '#ffd43b', 'z-index': 35 } }
+    { selector: 'node.constellation.active', style: { 'background-color': palette.activeBorder } }
   ]
 }
 
@@ -563,20 +619,30 @@ function buildKnowledgeMap(bundle: Bundle): KnowledgeMap {
     incoming.set(id, new Set())
   }
 
-  const edgeKeys = new Set<string>()
-  const rawEdges: Array<{ id: string; source: string; target: string }> = []
+  const directed = new Set<string>()
   const typeById = new Map(bundle.concepts.map((c) => [c.id, c.type]))
   for (const c of bundle.concepts) {
     for (const l of c.outgoing) {
       if (!l.targetId || !idSet.has(l.targetId)) continue
       if (l.targetId === c.id) continue
       const key = `${c.id}->${l.targetId}`
-      if (edgeKeys.has(key)) continue
-      edgeKeys.add(key)
+      if (directed.has(key)) continue
+      directed.add(key)
       outgoing.get(c.id)?.add(l.targetId)
       incoming.get(l.targetId)?.add(c.id)
-      rawEdges.push({ id: key, source: c.id, target: l.targetId })
     }
+  }
+
+  // Collapse reciprocal links (A→B and B→A) into one edge drawn with an arrowhead
+  // on each end, instead of two overlapping single-headed edges.
+  const rawEdges: Array<{ id: string; source: string; target: string; bidir: boolean }> = []
+  const seenPair = new Set<string>()
+  for (const key of directed) {
+    const [a, b] = key.split('->')
+    const pair = a < b ? `${a} ${b}` : `${b} ${a}`
+    if (seenPair.has(pair)) continue
+    seenPair.add(pair)
+    rawEdges.push({ id: `${a}->${b}`, source: a, target: b, bidir: directed.has(`${b}->${a}`) })
   }
 
   const pageRank = scorePageRank(ids, outgoing, incoming)
@@ -631,11 +697,49 @@ function buildKnowledgeMap(bundle: Bundle): KnowledgeMap {
         target: e.target,
         color: colorForType(typeById.get(e.source) ?? ''),
         width: 1 + edgeCentrality * 1.4
-      }
+      },
+      classes: e.bidir ? 'bidir' : undefined
     }
   })
 
-  return { elements: [...nodeElements, ...edgeElements], nodeCount: nodeElements.length, edgeCount: edgeElements.length }
+  const orphanCount = ids.filter(
+    (id) => (outgoing.get(id)?.size ?? 0) + (incoming.get(id)?.size ?? 0) === 0
+  ).length
+
+  return {
+    elements: [...nodeElements, ...edgeElements],
+    nodeCount: nodeElements.length,
+    edgeCount: edgeElements.length,
+    orphanCount,
+    clusterCount: countComponents(ids, outgoing, incoming),
+    reciprocalCount: rawEdges.filter((e) => e.bidir).length
+  }
+}
+
+// Connected components over the undirected link graph (orphans count as singletons).
+function countComponents(
+  ids: string[],
+  outgoing: Map<string, Set<string>>,
+  incoming: Map<string, Set<string>>
+): number {
+  const seen = new Set<string>()
+  let components = 0
+  for (const start of ids) {
+    if (seen.has(start)) continue
+    components++
+    const stack = [start]
+    seen.add(start)
+    while (stack.length) {
+      const cur = stack.pop() as string
+      for (const nb of [...(outgoing.get(cur) ?? []), ...(incoming.get(cur) ?? [])]) {
+        if (!seen.has(nb)) {
+          seen.add(nb)
+          stack.push(nb)
+        }
+      }
+    }
+  }
+  return components
 }
 
 function scorePageRank(

@@ -71,11 +71,32 @@ export default function App(): JSX.Element {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'g') {
         e.preventDefault()
         setView(view === 'graph' ? 'document' : 'graph')
+      } else if ((e.metaKey || e.ctrlKey) && e.key === '[') {
+        e.preventDefault()
+        useStore.getState().back()
+      } else if ((e.metaKey || e.ctrlKey) && e.key === ']') {
+        e.preventDefault()
+        useStore.getState().forward()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [togglePalette, setView, view])
+
+  // Mouse back/forward buttons (browsers map these to nav history too).
+  useEffect(() => {
+    const onMouse = (e: MouseEvent): void => {
+      if (e.button === 3) {
+        e.preventDefault()
+        useStore.getState().back()
+      } else if (e.button === 4) {
+        e.preventDefault()
+        useStore.getState().forward()
+      }
+    }
+    window.addEventListener('mouseup', onMouse)
+    return () => window.removeEventListener('mouseup', onMouse)
+  }, [])
 
   useEffect(() => {
     const hideTimers = new WeakMap<Element, number>()
@@ -151,6 +172,7 @@ export default function App(): JSX.Element {
       <main className="main">
         <div className="topbar">
           <div className="topbar-left">
+            {activeBundle && <HistoryNav />}
             <div className="tabs">
               {activeBundle &&
                 tabs.map((t) => (
@@ -232,6 +254,48 @@ function readStoredNumber(key: string, fallback: number): number {
   if (!raw) return fallback
   const value = Number(raw)
   return Number.isFinite(value) ? value : fallback
+}
+
+// Browser-style back/forward over the navigation trail. Lives in the topbar as
+// global chrome, not in the document (which already shows its own path).
+function HistoryNav(): JSX.Element {
+  const back = useStore((s) => s.back)
+  const forward = useStore((s) => s.forward)
+  const history = useStore((s) => s.history)
+  const index = useStore((s) => s.historyIndex)
+  const bundles = useStore((s) => s.bundles)
+
+  const canBack = index > 0
+  const canForward = index < history.length - 1
+  const labelFor = (i: number): string => {
+    const loc = history[i]
+    if (!loc) return ''
+    const c = bundles[loc.bundleId]?.concepts.find((x) => x.id === loc.conceptId)
+    return c?.title || loc.conceptId.split('/').pop() || loc.conceptId
+  }
+
+  return (
+    <div className="history-nav" role="group" aria-label="Navigation history">
+      <button
+        className="history-btn"
+        disabled={!canBack}
+        onClick={back}
+        aria-label="Back"
+        title={canBack ? `Back to ${labelFor(index - 1)} (⌘[)` : 'Back'}
+      >
+        ‹
+      </button>
+      <button
+        className="history-btn"
+        disabled={!canForward}
+        onClick={forward}
+        aria-label="Forward"
+        title={canForward ? `Forward to ${labelFor(index + 1)} (⌘])` : 'Forward'}
+      >
+        ›
+      </button>
+    </div>
+  )
 }
 
 function McpIndicator(): JSX.Element | null {
