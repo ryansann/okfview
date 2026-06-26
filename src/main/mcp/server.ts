@@ -355,11 +355,21 @@ function tocEntry(c: Concept): unknown {
 function diagnosticSummary(diags: Diagnostic[]): unknown {
   const sev = { error: 0, warn: 0, info: 0 }
   const byCode: Record<string, number> = {}
+  const byCategory: Record<string, number> = {}
+  let spec = 0
+  let lint = 0
   for (const d of diags) {
     if (d.severity in sev) sev[d.severity as keyof typeof sev]++
     byCode[d.code] = (byCode[d.code] ?? 0) + 1
+    if (d.spec) {
+      spec++
+    } else {
+      lint++
+      const category = d.categoryName ?? d.category ?? 'Lint'
+      byCategory[category] = (byCategory[category] ?? 0) + 1
+    }
   }
-  return { total: diags.length, ...sev, byCode }
+  return { total: diags.length, ...sev, spec, lint, byCategory, byCode }
 }
 
 function vocabulary(b: Bundle): unknown {

@@ -24,6 +24,6 @@ okfview keeps a library of every bundle you have imported.
 
 # Notes
 
-Recents (`kind`, `origin`, `label`, `lastOpened`) and the ordered auto-restored open set live
-in the [JSON settings store](/decisions/json-not-sqlite.md). Reopen reuses the same code path
-as restore and the [source adapters](/architecture/source-adapters.md).
+Recents (`kind`, `origin`, `label`, `lastOpened`) and the ordered auto-restored open set
+live in the [JSON settings store](/decisions/json-not-sqlite.md). Reopen reuses the same
+source path as [Live Sync](/features/live-sync.md), so local and remote bundles behave consistently.

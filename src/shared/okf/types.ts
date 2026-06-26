@@ -69,7 +69,20 @@ export interface Diagnostic {
   code: string
   file: string
   message: string
-  fix?: string // optional actionable suggestion (from okftool)
+  /** True for OKF spec conformance diagnostics; false for advisory lint rules. */
+  spec?: boolean
+  /** Human-readable lint rule name, when this diagnostic came from a lint rule. */
+  ruleName?: string
+  /** Stable lint category id, such as `frontmatter` or `graph-structure`. */
+  category?: string
+  /** Human-readable lint category name. */
+  categoryName?: string
+  /** Why this rule exists. */
+  rationale?: string
+  /** Human-actionable rule explanation. */
+  help?: string
+  /** Optional actionable suggestion from okftool. */
+  fix?: string
 }
 
 export interface Bundle {

@@ -1,9 +1,9 @@
 ---
-type: Architecture
+type: Module
 title: Architecture Overview
 description: okfview is a shared OKF core wrapped by an Electron main process, a sandboxed React renderer, and an MCP server.
 resource: https://github.com/ryansann/okfview/blob/main/DESIGN.md
-tags: [architecture, electron, overview]
+tags: [architecture, electron, overview, hub]
 timestamp: 2026-06-18T00:00:00Z
 ---
 

@@ -28,13 +28,14 @@ Renders the bundle as a directed knowledge map: each concept is a node colored b
   so switching away from the graph and back does not reset exploration.
 - Edges come from the same link resolution the OKF core computes, so the graph and
   document backlinks always agree.
+- [Search](/features/search.md) and graph highlighting share the same concept ids, so command-palette
+  discovery and visual exploration reinforce each other.
 
 # Notes
 
-The graph shows one node per concept *file* — the OKF model. (A non-standard bundle that
-encodes concepts in a manifest instead of files will look sparse; that is expected, see
-[spec-only scope](/decisions/spec-only-scope.md).)
+The graph shows one node per concept *file* — the OKF model. A non-standard bundle that
+encodes concepts in a manifest instead of files will look sparse; that is expected.
 
-The graph is only as legible as the link structure it draws — see [graph
-authoring](/reference/graph-authoring.md) for how to write documents that produce a useful
-map instead of a hairball.
+The graph is only as legible as the link structure it draws. The
+[graph authoring](/reference/graph-authoring.md) guide explains how to write documents that
+produce a useful map instead of a hairball.

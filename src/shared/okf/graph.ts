@@ -49,7 +49,8 @@ export function buildBundle(input: RawBundle): Bundle {
             severity: 'info',
             code: 'broken-link',
             file: c.filePath,
-            message: `Link "${link.href}" has no matching concept in the bundle.`
+            message: `Link "${link.href}" has no matching concept in the bundle.`,
+            spec: true
           })
         }
       }
