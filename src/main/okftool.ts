@@ -18,9 +18,14 @@ type OkftoolSeverity = 'off' | 'info' | 'warn' | 'error'
 interface OkftoolDiagnostic {
   file: string
   code: string
+  ruleName?: string
+  category?: string
+  categoryName?: string
   severity: OkftoolSeverity
   message: string
   spec: boolean
+  rationale?: string
+  help?: string
   fix?: string
 }
 
@@ -50,6 +55,12 @@ function mapDiagnostic(d: OkftoolDiagnostic): Diagnostic {
     code: d.code,
     file: d.file,
     message: d.message,
+    spec: d.spec,
+    ...(d.ruleName ? { ruleName: d.ruleName } : {}),
+    ...(d.category ? { category: d.category } : {}),
+    ...(d.categoryName ? { categoryName: d.categoryName } : {}),
+    ...(d.rationale ? { rationale: d.rationale } : {}),
+    ...(d.help ? { help: d.help } : {}),
     ...(d.fix ? { fix: d.fix } : {})
   }
 }

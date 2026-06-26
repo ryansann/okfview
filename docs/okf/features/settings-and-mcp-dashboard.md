@@ -26,6 +26,6 @@ The Agents section is a live control surface for the [MCP server](/architecture/
 
 # Notes
 
-Enabled state, port, and scope persist via the [JSON settings store](/decisions/json-not-sqlite.md).
-A green **MCP** chip appears in the top bar while the server runs. The tools agents can call
-are listed in [MCP tools](/reference/mcp-tools.md).
+Enabled state, port, and scope persist in the JSON settings store. A green **MCP** chip
+appears in the top bar while the server runs. Validation findings shown to agents use the
+same okftool metadata rendered by [Diagnostics](/features/diagnostics.md).

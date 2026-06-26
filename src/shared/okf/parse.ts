@@ -64,7 +64,8 @@ export function parseConcept(path: string, raw: string): ParsedConcept {
       severity: 'warn',
       code: 'missing-frontmatter',
       file: path,
-      message: 'Concept document has no YAML frontmatter block (spec §9.1).'
+      message: 'Concept document has no YAML frontmatter block (spec §9.1).',
+      spec: true
     })
   } else {
     try {
@@ -76,7 +77,8 @@ export function parseConcept(path: string, raw: string): ParsedConcept {
         severity: 'warn',
         code: 'frontmatter-parse',
         file: path,
-        message: `Unparseable YAML frontmatter: ${(e as Error).message}`
+        message: `Unparseable YAML frontmatter: ${(e as Error).message}`,
+        spec: true
       })
     }
   }
@@ -87,7 +89,8 @@ export function parseConcept(path: string, raw: string): ParsedConcept {
       severity: 'warn',
       code: 'missing-type',
       file: path,
-      message: 'Frontmatter is missing a non-empty `type` field (spec §9.2).'
+      message: 'Frontmatter is missing a non-empty `type` field (spec §9.2).',
+      spec: true
     })
   }
 
@@ -141,7 +144,8 @@ export function parseIndex(path: string, raw: string): ParsedIndex {
           severity: 'info',
           code: 'index-frontmatter',
           file: path,
-          message: 'Frontmatter in an index.md is only permitted in the bundle-root index (spec §11).'
+          message: 'Frontmatter in an index.md is only permitted in the bundle-root index (spec §11).',
+          spec: true
         })
       }
     } catch {

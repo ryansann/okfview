@@ -19,8 +19,8 @@ The API and channel names are defined once in `src/shared/ipc.ts` and shared by 
 layers, so main, preload, and renderer cannot drift:
 
 - Bundles: `listBundles`, `openLocalDialog`, `openGit`, `openHttp`, `getBundle`, `refreshBundle`, `closeBundle`, `setShared`.
-- [Recents](/features/recents.md): `listRecents`, `openRecent`, `forgetRecent`.
-- [MCP](/features/settings-and-mcp-dashboard.md): `mcpStatus`, `mcpSetEnabled`, `mcpSetPort`.
+- Recents: `listRecents`, `openRecent`, `forgetRecent`.
+- MCP: `mcpStatus`, `mcpSetEnabled`, `mcpSetPort`.
 - Events: `onBundleChanged`, `onBundleError`, `onMcpChanged`.
 
 # Notes

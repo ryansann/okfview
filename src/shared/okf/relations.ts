@@ -38,11 +38,14 @@ export function conformanceSummary(bundle: Bundle): ConformanceSummary {
   const missingFrontmatter = count('missing-frontmatter')
   const missingType = count('missing-type')
   const brokenLinks = count('broken-link')
+  const hasExplicitSpecSignal = bundle.diagnostics.some((d) => d.spec !== undefined)
+  const hasSpecError = bundle.diagnostics.some((d) => d.spec && d.severity === 'error')
+  const hasLegacySpecFailure = missingFrontmatter > 0 || missingType > 0
   return {
     conceptCount: bundle.concepts.length,
     missingFrontmatter,
     missingType,
     brokenLinks,
-    conformant: missingFrontmatter === 0 && missingType === 0
+    conformant: hasExplicitSpecSignal ? !hasSpecError && !hasLegacySpecFailure : !hasLegacySpecFailure
   }
 }

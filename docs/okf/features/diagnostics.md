@@ -9,14 +9,15 @@ timestamp: 2026-06-18T00:00:00Z
 
 # Diagnostics
 
-A developer-facing panel that lists every [conformance](/reference/conformance.md) issue in
-a bundle, grouped by kind, each linking to the offending file. A bundle with no issues shows
-a "Conformant" badge.
+A developer-facing panel that lists conformance and lint findings in a bundle, grouped by
+severity, spec-vs-lint source, and okftool category. Each finding links to the offending
+file, and a bundle with no issues shows a "Conformant" badge.
 
 # Behavior
 
 - Issues are purely informational — per the spec, okfview never rejects a bundle.
 - A non-conformance banner appears when a bundle has files without frontmatter or `type`, so
   a non-standard bundle explains itself rather than looking broken.
-- The same checks back the `validate_bundle` and `validate_document`
-  [MCP tools](/reference/mcp-tools.md), so agents can debug the OKF they author.
+- Diagnostics use the same renderer patterns as [Document View](/features/document-view.md): compact
+  metadata first, then expandable context and direct navigation to the source concept.
+- The same checks back the MCP validation tools, so agents can debug the OKF they author.

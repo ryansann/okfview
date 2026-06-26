@@ -16,10 +16,11 @@ workspace, so agents see edits in realtime.
 
 # Schema
 
-- Reads serve from the OKF core: `relations.ts` for links and `lint.ts` for conformance.
+- The [main process](/architecture/main-process.md) owns lifecycle and settings for the embedded server.
+- Reads serve from the OKF core: `relations.ts` for links and okftool for diagnostics.
 - Per-session transports are tracked as connections (client name/version captured at
   initialize); every tool call is recorded into an activity ring buffer.
-- The full tool set is documented in [MCP tools](/reference/mcp-tools.md).
+- The full tool set is documented in the MCP tools reference.
 
 # Notes
 

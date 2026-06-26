@@ -22,10 +22,12 @@ runs in tests, the main process, and (for types) the renderer.
 | `relations.ts` | `backlinksOf`, `outgoingTargets`, `conformanceSummary`. |
 | `lint.ts` | Conformance issues with suggested fixes. |
 | `spec.ts` | The OKF v0.1 reference text. |
-| `types.ts` | The [data model](/reference/data-model.md). |
+| `types.ts` | Shared Bundle / Concept / Link / Diagnostic types. |
 
 # Notes
 
-Parsing is intentionally permissive per the [conformance contract](/reference/conformance.md):
-it never throws and never rejects a bundle. `gray-matter` is only imported by `parse.ts`
-and `lint.ts`, so those are main-process only; `spec.ts` and `types.ts` are safe in the renderer.
+Parsing is intentionally permissive: it never throws and never rejects a bundle. The
+[source adapters](/architecture/source-adapters.md) hand raw files to this core, and
+`gray-matter` stays confined to parser code that runs under the main process. The rendered
+[data model](/reference/data-model.md) reference mirrors these TypeScript contracts for
+agents and contributors.

@@ -16,12 +16,13 @@ near-instantly.
 
 1. A [source adapter](/architecture/source-adapters.md) watches the origin — `chokidar` for
    local folders, polling for git/HTTP.
-2. On change, the [main process](/architecture/main-process.md) re-loads and re-parses via
-   the OKF core and emits a change event over the context bridge.
+2. On change, the main process re-loads and re-parses via the OKF core and emits a change
+   event over the context bridge.
 3. The renderer patches the bundle in its store **in place** — selection, scroll, graph
    layout, and MCP scope are preserved.
 
 # Notes
 
-Because reads always reflect the live workspace, agents connected over
-MCP see the same fresh state with no extra work.
+Because reads always reflect the live workspace, agents connected over MCP see the same
+fresh state with no extra work. The same persisted bundle list powers
+[Recents](/features/recents.md), so reopen and live reload use the same source path.

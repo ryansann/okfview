@@ -12,7 +12,7 @@ export const TOOLS = [
   {
     name: 'describe_bundle',
     description:
-      'Situational awareness for one bundle: an overview (concept count, type vocabulary, conformance, and a diagnostic summary by severity/code) plus the lint policy in force. Pass `include` to add sections: "tree" (directory outline), "concepts" (the table of contents), "vocabulary" (types & tags with counts — use this to author consistent concepts), and "graph" (orphans, top hubs, connected components). Does NOT return full diagnostics — use `validate` for those.',
+      'Situational awareness for one bundle: an overview (concept count, type vocabulary, conformance, and a diagnostic summary by severity, spec/lint split, category, and code) plus the lint policy in force. Pass `include` to add sections: "tree" (directory outline), "concepts" (the table of contents), "vocabulary" (types & tags with counts — use this to author consistent concepts), and "graph" (orphans, top hubs, connected components). Does NOT return full diagnostics — use `validate` for those.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -58,7 +58,7 @@ export const TOOLS = [
   {
     name: 'validate',
     description:
-      'Validate and lint with okftool. Pass a `bundleId` to check a shared bundle, OR raw `content` to check a single draft document before you write it. Returns `conformant` (OKF §9), the strictness it `ranUnder`, and every diagnostic with a suggested `fix`. Spec conformance is always enforced; lint findings are advisory and configurable. Use `strictness` to override the app policy for this call: "app" (default), "minimal", "recommended", or "strict". See the okf://rules resource for what each rule means.',
+      'Validate and lint with okftool. Pass a `bundleId` to check a shared bundle, OR raw `content` to check a single draft document before you write it. Returns `conformant` (OKF §9), the strictness it `ranUnder`, and every diagnostic with severity, spec-vs-lint, rule/category metadata, help/rationale, and suggested `fix` when available. Spec conformance is always enforced; lint findings are advisory and configurable. Use `strictness` to override the app policy for this call: "app" (default), "minimal", "recommended", or "strict". See the okf://rules resource for what each rule means.',
     inputSchema: {
       type: 'object',
       properties: {

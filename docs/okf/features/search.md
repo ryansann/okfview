@@ -16,5 +16,5 @@ hits with snippets; selecting one opens it in the [document view](/features/docu
 # Notes
 
 Body-text search is a deliberate step beyond the title/id/tag search of the spec's bundled
-viewer. The same capability is available to agents as the `search_concepts`
-[MCP tool](/reference/mcp-tools.md).
+viewer. Agents use the same index through MCP when they need to find concepts without
+reading every file.

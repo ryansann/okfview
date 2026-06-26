@@ -23,9 +23,9 @@ frontmatter: a colored type pill, title, description, tags, timestamp, and a lau
   diagram has invalid syntax, okfview shows the source block and the Mermaid error instead
   of hiding the content.
 - A right rail toggles between list mode (**Referenced by** and **Links to**) and a compact
-  neighborhood map centered on the current concept. Both are computed from `relations.ts`
-  in the [OKF core](/architecture/okf-core.md).
+  neighborhood map centered on the current concept. The [OKF core](/architecture/okf-core.md)
+  computes those relations from the same links that power the graph.
 - This document-first reading experience is okfview's main edge over the concept-graph-only
   static viewer that ships with the spec.
 
-See also the graph view for the same relationships, visually.
+See [Graph View](/features/graph-view.md) for the same relationships as a directed map.
