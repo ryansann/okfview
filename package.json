@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@ryansann/okftool": "^0.2.2",
+    "@ryansann/okftool": "^0.2.3",
     "chokidar": "^3.6.0",
     "cytoscape-elk": "^2.3.0",
     "cytoscape-fcose": "^2.2.0",
