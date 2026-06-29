@@ -23,6 +23,12 @@ Open a bundle on launch (handy while iterating):
 OKF_OPEN="$PWD/docs/okf" npm start
 ```
 
+Use a throwaway profile for preview capture without restoring your saved bundles/settings:
+
+```bash
+OKF_USER_DATA_DIR="$(mktemp -d)" OKF_OPEN="$PWD/docs/okf" npm run dev
+```
+
 ## Useful scripts
 
 | Command | What it does |

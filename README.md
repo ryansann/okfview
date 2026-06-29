@@ -18,9 +18,9 @@
 
 ### For humans
 
-[![OKFView in-app demo](docs/assets/demos/okfview-human-demo.gif)](docs/assets/demos/okfview-human-demo.mp4)
+[![OKFView preview](docs/assets/demos/okfview-preview.gif)](docs/assets/demos/okfview-preview.mp4)
 
-[Watch the full in-app demo](docs/assets/demos/okfview-human-demo.mp4)
+[Watch the full in-app demo](docs/assets/demos/okfview-preview.mp4)
 
 ### For agents
 
