@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron'
 import { execFileSync } from 'child_process'
-import { existsSync } from 'fs'
+import { existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
 import { IPC } from '@shared/ipc'
 import type { LintConfig } from '@shared/ipc'
@@ -12,6 +12,12 @@ import { TOOLS, RESOURCES } from './mcp/tools'
 import { loadSettings, saveSettings } from './settings'
 
 setAppName() // before app is ready so the macOS app menu shows "OKFView"
+
+const userDataDir = process.env.OKF_USER_DATA_DIR?.trim()
+if (userDataDir) {
+  mkdirSync(userDataDir, { recursive: true })
+  app.setPath('userData', userDataDir)
+}
 
 const workspace = new Workspace()
 const mcp = new OkfMcpServer(workspace, app.getVersion())
