@@ -68,8 +68,18 @@ before touching code.
 - **Local and remote sources** - open a folder, git repo (`...repo.git#subpath`), or `.tar.gz` URL.
 - **Live sync** - file edits appear instantly without losing your place; remote sources poll for updates.
 - **MCP server** - expose scoped bundles to coding agents so they can browse, search, and validate OKF.
-- **Diagnostics** - OKF v0.1 conformance issues are surfaced, never enforced.
+- **Diagnostics** - embedded okftool validation surfaces spec conformance and lint feedback without blocking viewing.
 - **Persistence** - open bundles auto-restore; recent bundles and aliases are remembered.
+
+## okftool feedback loop
+
+OKFView embeds [okftool](https://github.com/ryansann/okftool), the validator and linter for
+OKF bundles. The viewer stays permissive: non-conformant bundles still open, with issues
+shown as diagnostics. Agents can use the same okftool-backed MCP validation tools as a
+feedback loop while authoring, so they can generate bundles that are not just valid, but
+well structured for graph navigation and progressive disclosure. Strictness is configurable
+in Settings, and a bundle can define its own policy with `.okftool.yml` or `.okftool.yaml`
+at the bundle root.
 
 ## Install (macOS)
 
